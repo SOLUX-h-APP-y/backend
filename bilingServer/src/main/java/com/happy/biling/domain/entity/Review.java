@@ -36,8 +36,8 @@ public class Review {
     private String content;
 
     @Column(updatable = false)
-    private LocalDateTime createAt;
+    private LocalDateTime createAt = LocalDateTime.now();
 
     @Column(nullable = false)
-    private LocalDateTime updateAt;
+    private LocalDateTime updateAt = LocalDateTime.now();
 }

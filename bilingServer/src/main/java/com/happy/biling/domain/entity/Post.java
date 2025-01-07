@@ -65,8 +65,8 @@ public class Post {
     private PostStatus status = PostStatus.°Å·¡Áß;
 
     @Column(updatable = false)
-    private LocalDateTime createAt;
+    private LocalDateTime createAt = LocalDateTime.now();
 
     @Column(nullable = false)
-    private LocalDateTime updateAt;
+    private LocalDateTime updateAt = LocalDateTime.now();
 }
