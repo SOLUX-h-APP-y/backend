@@ -1,7 +1,7 @@
 package com.happy.biling.domain.entity.enums;
 
 public enum PostStatus {
-    °Å·¡Áß,
-    »ç¿ëÁß,
-    °Å·¡¿Ï·á
+    ê±°ëž˜ì¤‘,
+    ì‚¬ìš©ì¤‘,
+    ê±°ëž˜ì™„ë£Œ
 }

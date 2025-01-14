@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 public class UserService {
     private final UserRepository userRepository;
 
-    // Áßº¹ ´Ğ³×ÀÓ °ËÁõ
+    // ì¤‘ë³µ ë‹‰ë„¤ì„ ê²€ì¦
     public Boolean checkNickname(NicknameCheckRequestDto requestDto) {
     	return userRepository.existsByNickname(requestDto.getNickname());   
     }

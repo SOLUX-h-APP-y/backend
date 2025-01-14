@@ -23,10 +23,9 @@ public class PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
 
-    // °Ô½Ã±Û »ý¼º (TODO ÀÌ¹ÌÁö ÀÖµµ·Ï º¸¿Ï ÇÊ¿ä)
+    // ê²Œì‹œê¸€ ìƒì„± (TODO ì´ë¯¸ì§€ ìžˆë„ë¡ ë³´ì™„ í•„ìš”)
     @Transactional
     public Post createPost(PostWriteRequestDto requestDto) {
-        // User °´Ã¼ Ã£±â
         User writer = userRepository.findById(requestDto.getWriterId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         

@@ -1,7 +1,7 @@
 package com.happy.biling.domain.entity.enums;
 
 public enum Distance {
-    °Å¸®¹«°ü,
+    ê±°ë¦¬ë¬´ê´€,
     km3,
     km5,
     km10

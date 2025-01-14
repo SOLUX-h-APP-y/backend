@@ -24,13 +24,13 @@ public class SecurityConfig {
 	@SuppressWarnings("removal")
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		http.cors(cors -> cors.disable()) // CORS ºñÈ°¼ºÈ­
-				.csrf(csrf -> csrf.disable()) // CSRF ºñÈ°¼ºÈ­
-				.formLogin(formLogin -> formLogin.disable()) // ±âº» ·Î±×ÀÎ ÆäÀÌÁö ºñÈ°¼ºÈ­
-				.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))// X-Frame-Options ºñÈ°¼ºÈ­
+		http.cors(cors -> cors.disable()) // CORS ë¹„í™œì„±í™”
+				.csrf(csrf -> csrf.disable()) // CSRF ë¹„í™œì„±í™”
+				.formLogin(formLogin -> formLogin.disable()) // ê¸°ë³¸ ë¡œê·¸ì¸ í˜ì´ì§€ ë¹„í™œì„±í™”
+				.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))// X-Frame-Options ë¹„í™œì„±í™”
 	            .authorizeHttpRequests()
-	            .requestMatchers("/auth/**").permitAll() // ÀÎÁõ ¾øÀÌ Á¢±Ù °¡´ÉÇÑ °æ·Î ¼³Á¤
-	            .anyRequest().authenticated() // ³ª¸ÓÁö ¿äÃ»Àº ÀÎÁõ ÇÊ¿ä
+	            .requestMatchers("/auth/**").permitAll() // ì¸ì¦ ì—†ì´ ì ‘ê·¼ ê°€ëŠ¥í•œ ê²½ë¡œ ì„¤ì •
+	            .anyRequest().authenticated() // ë‚˜ë¨¸ì§€ ìš”ì²­ì€ ì¸ì¦ í•„ìš”
 	            .and()
 	            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 		return http.build();
