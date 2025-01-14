@@ -23,7 +23,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
 
-    // 게시글 생성 (Todo 이미지 있도록 보완 필요)
+    // 게시글 생성 (TODO 이미지 있도록 보완 필요)
     @Transactional
     public Post createPost(PostWriteRequestDto requestDto) {
         // User 객체 찾기

@@ -1,7 +1,7 @@
 
 CREATE TABLE `users` (
    `id` INT NOT NULL AUTO_INCREMENT,
-   `kakao_id` VARCHAR(9) NOT NULL,
+   `kakao_id` VARCHAR(10) NOT NULL,
    `nickname` VARCHAR(10) NOT NULL,
    `profile_image` TEXT NULL,
    `location_name` TEXT NULL,
