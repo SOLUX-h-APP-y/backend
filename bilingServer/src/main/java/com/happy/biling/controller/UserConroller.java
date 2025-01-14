@@ -2,8 +2,10 @@ package com.happy.biling.controller;
 
 import com.happy.biling.domain.service.UserService;
 import com.happy.biling.dto.auth.*;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -13,8 +15,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class UserConroller {
     
-    private final UserService userService;
+    private final UserService userService; 
     
+    //닉네임 중복 체크
     @GetMapping("/auth/check-nickname")
     public ResponseEntity<Map<String, Boolean>> createPost(@RequestBody NicknameCheckRequestDto requestDto) {
         try {
@@ -28,4 +31,12 @@ public class UserConroller {
             return ResponseEntity.internalServerError().build();
         }
     }
+
+    //user Id 얻기
+    @GetMapping("/user/info")
+    public String getUserInfo() {
+        String userId = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return "Hello, user with ID: " + userId;
+    }
+
 }
