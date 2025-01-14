@@ -14,11 +14,11 @@ public class SecurityConfig {
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		http.cors(cors -> cors.disable()) // CORS ºñÈ°¼ºÈ­
-				.csrf(csrf -> csrf.disable()) // CSRF ºñÈ°¼ºÈ­
-				.formLogin(formLogin -> formLogin.disable()) // ±âº» ·Î±×ÀÎ ÆäÀÌÁö ºñÈ°¼ºÈ­
+		http.cors(cors -> cors.disable()) // CORS ë¹„í™œì„±í™”
+				.csrf(csrf -> csrf.disable()) // CSRF ë¹„í™œì„±í™”
+				.formLogin(formLogin -> formLogin.disable()) // ê¸°ë³¸ ë¡œê·¸ì¸ íŽ˜ì´ì§€ ë¹„í™œì„±í™”
 				.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable())); // X-Frame-Options
-																									// ºñÈ°¼ºÈ­
+																									// ë¹„í™œì„±í™”
 		return http.build();
 	}
 

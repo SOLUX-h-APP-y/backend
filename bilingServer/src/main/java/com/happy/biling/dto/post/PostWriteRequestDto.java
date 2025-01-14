@@ -4,15 +4,15 @@ import lombok.Getter;
 
 @Getter
 public class PostWriteRequestDto {
-    private Long writerId; //ÅäÅ« »ı¼º½Ã ÅäÅ«¿¡¼­ user id »Ì¾Æ¾µ ¼öµµ ÀÖÀ»µí
+    private Long writerId; //í† í° ìƒì„±ì‹œ í† í°ì—ì„œ user id ë½‘ì•„ì“¸ ìˆ˜ë„ ìˆì„ë“¯
     private String type; //share borrow
     private String title;
     private Integer price;
-    //¿©±â¿¡ »çÁø±îÁö Ãß°¡ÇØ¾ßÇÔ
+    //ì—¬ê¸°ì— ì‚¬ì§„ê¹Œì§€ ì¶”ê°€í•´ì•¼í•¨
     private String content;
     private String distance;
     private String category;
-    private Integer period; //°ø°í±â°£
+    private Integer period; //ê³µê³ ê¸°ê°„
     private String locationName;
     private Double locationLatitude;
     private Double locationLongitude;

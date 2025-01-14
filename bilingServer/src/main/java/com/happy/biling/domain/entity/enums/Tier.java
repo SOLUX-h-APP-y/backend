@@ -1,10 +1,10 @@
 package com.happy.biling.domain.entity.enums;
 
 public enum Tier {
-    ¾¾¾Ñ,
-    »õ½Ï,
-    Ç®,
-    ³ª¹«,
-    ½£,
-    Áö±¸
+    ì”¨ì•—,
+    ìƒˆì‹¹,
+    í’€,
+    ë‚˜ë¬´,
+    ìˆ²,
+    ì§€êµ¬
 }

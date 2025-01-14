@@ -1,9 +1,9 @@
 package com.happy.biling.domain.entity.enums;
 
 public enum Category {
-    Çï½º,
-    ÆĞ¼Ç,
-    ¿£ÅÍ,
-    ÇĞ¾÷,
-    ±âÅ¸
+    í—¬ìŠ¤,
+    íŒ¨ì…˜,
+    ì—”í„°,
+    í•™ì—…,
+    ê¸°íƒ€
 }

@@ -17,9 +17,9 @@ public class PostController {
     public ResponseEntity<Void> createPost(@RequestBody PostWriteRequestDto requestDto) {
         try {
             postService.createPost(requestDto);
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).build(); //¼º°ø
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build(); //ì„±ê³µ
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); //½ÇÆÐ
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); //ì‹¤íŒ¨
         }
     }
 }
