@@ -9,7 +9,7 @@ CREATE TABLE `users` (
    `location_longitude` DOUBLE NULL,
    `bio` TEXT NULL,
    `rental_count` INT NOT NULL default 0,
-   `tier` ENUM('¾¾¾Ñ', '»õ½Ï', 'Ç®', '³ª¹«', '½£', 'Áö±¸') NOT NULL DEFAULT '¾¾¾Ñ',
+   `tier` ENUM('ì”¨ì•—', 'ìƒˆì‹¹', 'í’€', 'ë‚˜ë¬´', 'ìˆ²', 'ì§€êµ¬') NOT NULL DEFAULT 'ì”¨ì•—',
    `allow_notification` BOOLEAN NOT NULL DEFAULT TRUE,
    `create_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
    `update_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -23,13 +23,13 @@ CREATE TABLE `posts` (
    `title` VARCHAR(20) NOT NULL,
    `content` TEXT NOT NULL,
    `price` INT NOT NULL,
-   `distance` ENUM('°Å¸®¹«°ü', '3km', '5km', '10km') NOT NULL,
-   `category` ENUM('Çï½º', 'ÆĞ¼Ç', '¿£ÅÍ', 'ÇĞ¾÷', '±âÅ¸') NOT NULL,
+   `distance` ENUM('ê±°ë¦¬ë¬´ê´€', '3km', '5km', '10km') NOT NULL,
+   `category` ENUM('í—¬ìŠ¤', 'íŒ¨ì…˜', 'ì—”í„°', 'í•™ì—…', 'ê¸°íƒ€') NOT NULL,
    `expiration_date` DATETIME NOT NULL,
    `location_name` TEXT NOT NULL,
    `location_latitude` DOUBLE NOT NULL,
    `location_longitude` DOUBLE NOT NULL,
-   `status` ENUM('°Å·¡Áß', '»ç¿ëÁß', '°Å·¡¿Ï·á') NOT NULL DEFAULT '°Å·¡Áß',
+   `status` ENUM('ê±°ë˜ì¤‘', 'ì‚¬ìš©ì¤‘', 'ê±°ë˜ì™„ë£Œ') NOT NULL DEFAULT 'ê±°ë˜ì¤‘',
    `create_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
    `update_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
    PRIMARY KEY (`id`)
@@ -92,70 +92,70 @@ CREATE TABLE `chat_rooms` (
    PRIMARY KEY (`id`)
 );
 
--- user Å×ÀÌºíÀÇ id¸¦ ÂüÁ¶ÇÏ´Â ¿Ü·¡Å°
+-- user í…Œì´ë¸”ì˜ idë¥¼ ì°¸ì¡°í•˜ëŠ” ì™¸ë˜í‚¤
 ALTER TABLE `posts`
     ADD CONSTRAINT `FK_POST_USER`
     FOREIGN KEY (`writer_id`) REFERENCES `users` (`id`)
     ON DELETE CASCADE
     ON UPDATE CASCADE;
 
--- post Å×ÀÌºíÀÇ id¸¦ ÂüÁ¶ÇÏ´Â ¿Ü·¡Å°
+-- post í…Œì´ë¸”ì˜ idë¥¼ ì°¸ì¡°í•˜ëŠ” ì™¸ë˜í‚¤
 ALTER TABLE `reviews`
     ADD CONSTRAINT `FK_REVIEW_POST`
     FOREIGN KEY (`post_id`) REFERENCES `posts` (`id`)
     ON DELETE CASCADE
     ON UPDATE CASCADE;
 
--- user Å×ÀÌºíÀÇ id¸¦ ÂüÁ¶ÇÏ´Â ¿Ü·¡Å°
+-- user í…Œì´ë¸”ì˜ idë¥¼ ì°¸ì¡°í•˜ëŠ” ì™¸ë˜í‚¤
 ALTER TABLE `reviews`
     ADD CONSTRAINT `FK_REVIEW_REVIEWER`
     FOREIGN KEY (`reviewer_id`) REFERENCES `users` (`id`)
     ON DELETE CASCADE
     ON UPDATE CASCADE;
 
--- user Å×ÀÌºíÀÇ id¸¦ ÂüÁ¶ÇÏ´Â ¿Ü·¡Å°
+-- user í…Œì´ë¸”ì˜ idë¥¼ ì°¸ì¡°í•˜ëŠ” ì™¸ë˜í‚¤
 ALTER TABLE `reviews`
     ADD CONSTRAINT `FK_REVIEW_REVIEWEE`
     FOREIGN KEY (`reviewee_id`) REFERENCES `users` (`id`)
     ON DELETE CASCADE
     ON UPDATE CASCADE;
 
--- post Å×ÀÌºíÀÇ id¸¦ ÂüÁ¶ÇÏ´Â ¿Ü·¡Å°
+-- post í…Œì´ë¸”ì˜ idë¥¼ ì°¸ì¡°í•˜ëŠ” ì™¸ë˜í‚¤
 ALTER TABLE `post_images`
     ADD CONSTRAINT `FK_POST_IMAGE_POST`
     FOREIGN KEY (`post_id`) REFERENCES `posts` (`id`)
     ON DELETE CASCADE
     ON UPDATE CASCADE;
 
--- chat_room Å×ÀÌºíÀÇ id¸¦ ÂüÁ¶ÇÏ´Â ¿Ü·¡Å°
+-- chat_room í…Œì´ë¸”ì˜ idë¥¼ ì°¸ì¡°í•˜ëŠ” ì™¸ë˜í‚¤
 ALTER TABLE `chat_messages`
     ADD CONSTRAINT `FK_CHAT_MESSAGE_CHAT_ROOM`
     FOREIGN KEY (`chatroom_id`) REFERENCES `chat_rooms` (`id`)
     ON DELETE CASCADE
     ON UPDATE CASCADE;
 
--- user Å×ÀÌºíÀÇ id¸¦ ÂüÁ¶ÇÏ´Â ¿Ü·¡Å°
+-- user í…Œì´ë¸”ì˜ idë¥¼ ì°¸ì¡°í•˜ëŠ” ì™¸ë˜í‚¤
 ALTER TABLE `user_message_read_status`
     ADD CONSTRAINT `FK_USER_MESSAGE_READ_STATUS_USER`
     FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
     ON DELETE CASCADE
     ON UPDATE CASCADE;
 
--- chat_room Å×ÀÌºíÀÇ id¸¦ ÂüÁ¶ÇÏ´Â ¿Ü·¡Å°
+-- chat_room í…Œì´ë¸”ì˜ idë¥¼ ì°¸ì¡°í•˜ëŠ” ì™¸ë˜í‚¤
 ALTER TABLE `user_message_read_status`
     ADD CONSTRAINT `FK_USER_MESSAGE_READ_STATUS_CHAT_ROOM`
     FOREIGN KEY (`chatroom_id`) REFERENCES `chat_rooms` (`id`)
     ON DELETE CASCADE
     ON UPDATE CASCADE;
 
--- post Å×ÀÌºíÀÇ id¸¦ ÂüÁ¶ÇÏ´Â ¿Ü·¡Å°
+-- post í…Œì´ë¸”ì˜ idë¥¼ ì°¸ì¡°í•˜ëŠ” ì™¸ë˜í‚¤
 ALTER TABLE `chat_rooms`
     ADD CONSTRAINT `FK_CHAT_ROOM_POST`
     FOREIGN KEY (`post_id`) REFERENCES `posts` (`id`)
     ON DELETE CASCADE
     ON UPDATE CASCADE;
 
--- user Å×ÀÌºíÀÇ id¸¦ ÂüÁ¶ÇÏ´Â ¿Ü·¡Å° (renter_id, owner_id)
+-- user í…Œì´ë¸”ì˜ idë¥¼ ì°¸ì¡°í•˜ëŠ” ì™¸ë˜í‚¤ (renter_id, owner_id)
 ALTER TABLE `chat_rooms`
     ADD CONSTRAINT `FK_CHAT_ROOM_RENTER`
     FOREIGN KEY (`renter_id`) REFERENCES `users` (`id`)
@@ -168,14 +168,14 @@ ALTER TABLE `chat_rooms`
     ON DELETE CASCADE
     ON UPDATE CASCADE;
 
--- user_message_read_status Å×ÀÌºí¿¡ user_id, chatroom_id ÄÃ·³¿¡ º¹ÇÕ ÀÎµ¦½º Ãß°¡
+-- user_message_read_status í…Œì´ë¸”ì— user_id, chatroom_id ì»¬ëŸ¼ì— ë³µí•© ì¸ë±ìŠ¤ ì¶”ê°€
 CREATE INDEX idx_user_message_user_chatroom ON user_message_read_status (user_id, chatroom_id);
 
--- posts Å×ÀÌºí¿¡ writer_id, status ÄÃ·³¿¡ ÀÎµ¦½º Ãß°¡
+-- posts í…Œì´ë¸”ì— writer_id, status ì»¬ëŸ¼ì— ì¸ë±ìŠ¤ ì¶”ê°€
 CREATE INDEX idx_post_writer_id ON posts (writer_id);
 CREATE INDEX idx_post_status ON posts (status);
 
--- chat_rooms Å×ÀÌºí¿¡ post_id, renter_id, owner_id ÄÃ·³¿¡ ÀÎµ¦½º Ãß°¡
+-- chat_rooms í…Œì´ë¸”ì— post_id, renter_id, owner_id ì»¬ëŸ¼ì— ì¸ë±ìŠ¤ ì¶”ê°€
 CREATE INDEX idx_chat_room_post_id ON chat_rooms (post_id);
 CREATE INDEX idx_chat_room_renter_id ON chat_rooms (renter_id);
 CREATE INDEX idx_chat_room_owner_id ON chat_rooms (owner_id);

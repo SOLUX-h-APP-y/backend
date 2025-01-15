@@ -59,7 +59,7 @@ public class User {
     @PrePersist
     private void prePersist() {
         if (tier == null) {
-            tier = Tier.¾¾¾Ñ; // '¾¾¾Ñ'À» ±âº»°ªÀ¸·Î ¼³Á¤
+            tier = Tier.ìƒˆì‹¹;
         }
     }
 }

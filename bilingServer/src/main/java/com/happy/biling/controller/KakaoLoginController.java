@@ -25,7 +25,7 @@ public class KakaoLoginController {
     
     private final UserService userService;
     private final KaKaoService kakaoService;  
-    private final JwtUtil jwtUtil; // JwtUtil 의존성 주입
+    private final JwtUtil jwtUtil;
 
     @Value("${kakao.client_id}")
     private String client_id;
@@ -39,14 +39,12 @@ public class KakaoLoginController {
         String kakaoAuthUrl = "https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=" 
                               + client_id + "&redirect_uri=" + redirect_uri;
 
-        // RestTemplate을 사용하여 요청
         RestTemplate restTemplate = new RestTemplate();
         String response = restTemplate.getForObject(kakaoAuthUrl, String.class);
 
         return ResponseEntity.ok(response);
     }
     
-    //카카오 로그인/회원가입
     @GetMapping("/auth/kakao/callback")
     public ResponseEntity<?> kakaoLogin(@RequestParam("code") String accessCode) {
         try {
@@ -57,12 +55,10 @@ public class KakaoLoginController {
             Optional<User> existUser = userService.findUserByKakaoId(userInfo.getId().toString());
             
             if (existUser.isEmpty()) {
-            	// 회원 정보가 없으면 
             	KakaoLoginResponseDto kakaoLoginResponseDto = new KakaoLoginResponseDto();
             	kakaoLoginResponseDto.setKakaoId(userInfo.getId().toString());
                 return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT).body(kakaoLoginResponseDto);
             } else {
-                // 회원 정보가 있으면 로그인 처리
             	User user = existUser.get();                
                 
                 String token = jwtUtil.generateToken(String.valueOf(user.getId()));
@@ -70,7 +66,7 @@ public class KakaoLoginController {
                 responseDto.setAccessToken(token);
               
 
-                //TODO Refresh 토큰도 발급하도록 추후 수정 필요
+                //TODO 
                 responseDto.setRefreshToken(token+"imsi");
 
                 
@@ -90,12 +86,11 @@ public class KakaoLoginController {
 			String token = jwtUtil.generateToken(String.valueOf(createdUser.getId()));
             TokenResponseDto responseDto = new TokenResponseDto();
             responseDto.setAccessToken(token);
-            //TODO Refresh 토큰도 발급하도록 추후 수정 필요
+            //TODO
             responseDto.setRefreshToken(token+"imsi");
 
             return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
         } catch (Exception e) {
-            log.error("추가 정보 입력 실패", e);
             return ResponseEntity.internalServerError().build();
         }
     }

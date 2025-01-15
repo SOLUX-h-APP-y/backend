@@ -17,7 +17,6 @@ public class UserConroller {
     
     private final UserService userService; 
     
-    //닉네임 중복 체크
     @GetMapping("/auth/check-nickname")
     public ResponseEntity<Map<String, Boolean>> createPost(@RequestBody NicknameCheckRequestDto requestDto) {
         try {
@@ -32,7 +31,6 @@ public class UserConroller {
         }
     }
 
-    //user Id 얻기
     @GetMapping("/user/info")
     public String getUserInfo() {
         String userId = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();

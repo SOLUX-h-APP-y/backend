@@ -44,11 +44,6 @@ public class KaKaoService {
                 .bodyToMono(KakaoTokenResponseDto.class)
                 .block();
 
-
-        log.info(" [Kakao Service] Access Token ------> {}", kakaoTokenResponseDto.getAccessToken());
-        log.info(" [Kakao Service] Refresh Token ------> {}", kakaoTokenResponseDto.getRefreshToken());
-        log.info(" [Kakao Service] Scope ------> {}", kakaoTokenResponseDto.getScope());
-
         return kakaoTokenResponseDto;
     }
     
@@ -60,7 +55,7 @@ public class KaKaoService {
                         .scheme("https")
                         .path("/v2/user/me")
                         .build(true))
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken) // access token ÀÎ°¡
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                 .header(HttpHeaders.CONTENT_TYPE, HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED.toString())
                 .retrieve()
                 //TODO : Custom Exception
@@ -68,10 +63,6 @@ public class KaKaoService {
                 .onStatus(HttpStatusCode::is5xxServerError, clientResponse -> Mono.error(new RuntimeException("Internal Server Error")))
                 .bodyToMono(KakaoUserInfoResponseDto.class)
                 .block();
-
-        log.info("[ Kakao Service ] Auth ID ---> {} ", userInfo.getId());
-        log.info("[ Kakao Service ] NickName ---> {} ", userInfo.getKakaoAccount().getProfile().getNickName());
-        log.info("[ Kakao Service ] ProfileImageUrl ---> {} ", userInfo.getKakaoAccount().getProfile().getProfileImageUrl());
 
         return userInfo;
     }
