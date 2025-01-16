@@ -62,7 +62,7 @@ public class Post {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private PostStatus status = PostStatus.°Å·¡Áß;
+    private PostStatus status = PostStatus.ê±°ëž˜ì¤‘;
 
     @Column(updatable = false)
     private LocalDateTime createAt = LocalDateTime.now();

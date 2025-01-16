@@ -19,7 +19,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 9)
+    @Column(nullable = false, length = 10)
     private String kakaoId;
 
     @Column(nullable = false, length = 10)
@@ -55,4 +55,11 @@ public class User {
 
     @Column(nullable = false)
     private LocalDateTime updateAt = LocalDateTime.now();
+    
+    @PrePersist
+    private void prePersist() {
+        if (tier == null) {
+            tier = Tier.새싹;
+        }
+    }
 }
