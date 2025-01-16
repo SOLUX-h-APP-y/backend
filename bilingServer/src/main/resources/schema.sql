@@ -179,3 +179,26 @@ CREATE INDEX idx_post_status ON posts (status);
 CREATE INDEX idx_chat_room_post_id ON chat_rooms (post_id);
 CREATE INDEX idx_chat_room_renter_id ON chat_rooms (renter_id);
 CREATE INDEX idx_chat_room_owner_id ON chat_rooms (owner_id);
+
+CREATE TABLE cheers (
+                        id INT NOT NULL AUTO_INCREMENT,
+                        receiver_id INT NOT NULL,
+                        sender_id INT NOT NULL,
+                        create_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        total_cheers INT DEFAULT 0,
+                        PRIMARY KEY (id),
+                        UNIQUE (receiver_id, sender_id)
+);
+
+ALTER TABLE cheers
+    ADD CONSTRAINT FK_CHEER_RECEIVER
+        FOREIGN KEY (receiver_id) REFERENCES users (id)
+            ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE cheers
+    ADD CONSTRAINT FK_CHEER_SENDER
+        FOREIGN KEY (sender_id) REFERENCES users (id)
+            ON DELETE CASCADE ON UPDATE CASCADE;
+
+CREATE INDEX idx_cheers_receiver_id ON cheers (receiver_id);
+CREATE INDEX idx_cheers_sender_id ON cheers (sender_id);
