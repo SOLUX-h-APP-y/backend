@@ -13,8 +13,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.reactive.result.view.RedirectView;
 
 import java.util.Optional;
 
@@ -34,15 +32,34 @@ public class KakaoLoginController {
     private String redirect_uri;
 
     
-    @GetMapping("/auth/kakao")
-    public ResponseEntity<String> redirectToKakaoAuth() {
-        String kakaoAuthUrl = "https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=" 
-                              + client_id + "&redirect_uri=" + redirect_uri;
+    @PostMapping("/auth/kakao")
+    public ResponseEntity<?> kakaoLoginWithToken(@RequestBody KakaoLoginRequestDto requestDto) {
+        try {
+        	KakaoUserInfoResponseDto userInfo = kakaoService.getUserInfo(requestDto.getKakaoAccessToken());
+            
+            Optional<User> existUser = userService.findUserByKakaoId(userInfo.getId().toString());
+            
+            if (existUser.isEmpty()) {
+            	KakaoLoginResponseDto kakaoLoginResponseDto = new KakaoLoginResponseDto();
+            	kakaoLoginResponseDto.setKakaoId(userInfo.getId().toString());
+                return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT).body(kakaoLoginResponseDto);
+            } else {
+            	User user = existUser.get();                
+                
+                String token = jwtUtil.generateToken(String.valueOf(user.getId()));
+                TokenResponseDto responseDto = new TokenResponseDto();
+                responseDto.setAccessToken(token);
 
-        RestTemplate restTemplate = new RestTemplate();
-        String response = restTemplate.getForObject(kakaoAuthUrl, String.class);
+                //TODO 
+                responseDto.setRefreshToken(token+"imsi");
 
-        return ResponseEntity.ok(response);
+                
+                return ResponseEntity.ok(responseDto);
+            }
+                        
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
     
     @GetMapping("/auth/kakao/callback")
@@ -50,7 +67,7 @@ public class KakaoLoginController {
         try {
             KakaoTokenResponseDto kakaoTokenResponseDto = kakaoService.getAccessTokenFromKakao(accessCode);
             String accessToken = kakaoTokenResponseDto.getAccessToken();
-            
+            log.info(accessToken);
             KakaoUserInfoResponseDto userInfo = kakaoService.getUserInfo(accessToken);
             Optional<User> existUser = userService.findUserByKakaoId(userInfo.getId().toString());
             
