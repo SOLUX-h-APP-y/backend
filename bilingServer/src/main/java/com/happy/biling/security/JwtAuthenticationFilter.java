@@ -29,11 +29,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        String token = authHeader.substring(7); // "Bearer " ÀÌÈÄÀÇ ÅäÅ« ÃßÃâ
+        String token = authHeader.substring(7); // "Bearer " ì´í›„ì˜ í† í° ì¶”ì¶œ
         if (jwtUtil.validateToken(token)) {
             String userId = jwtUtil.getUserIdFromToken(token);
 
-            // »ç¿ëÀÚ ÀÎÁõ Á¤º¸ ¼³Á¤
+            // ì‚¬ìš©ì ì¸ì¦ ì •ë³´ ì„¤ì •
             var authentication = new JwtAuthentication(userId);
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authentication);

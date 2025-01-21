@@ -2,10 +2,12 @@ package com.happy.biling.dto.profile;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 @Getter
-@NoArgsConstructor
+@AllArgsConstructor
 public class CheerRequestDto {
     private Long senderId;
     private Long receiverId;
 }
+
