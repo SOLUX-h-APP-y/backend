@@ -1,33 +1,29 @@
 package com.happy.biling.domain.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+
 import java.time.LocalDateTime;
 
 @Entity
-@Getter
-@Setter
-@NoArgsConstructor
 @Table(name = "reviews")
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Review {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "post_id", nullable = false)
-    private Post post;
+    @Column(name = "post_id", nullable = false)
+    private Long postId;
 
-    @ManyToOne
-    @JoinColumn(name = "reviewer_id", nullable = false)
-    private User reviewer;
+    @Column(name = "reviewer_id", nullable = false)
+    private Long reviewerId;
 
-    @ManyToOne
-    @JoinColumn(name = "reviewee_id", nullable = false)
-    private User reviewee;
+    @Column(name = "reviewee_id", nullable = false)
+    private Long revieweeId;
 
     @Column(nullable = false)
     private Integer rate;
@@ -35,9 +31,20 @@ public class Review {
     @Column(nullable = false)
     private String content;
 
-    @Column(updatable = false)
-    private LocalDateTime createAt = LocalDateTime.now();
+    @Column(name = "create_at")
+    private LocalDateTime createAt;
 
-    @Column(nullable = false)
-    private LocalDateTime updateAt = LocalDateTime.now();
+    @Column(name = "update_at")
+    private LocalDateTime updateAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createAt = LocalDateTime.now();
+        updateAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updateAt = LocalDateTime.now();
+    }
 }
