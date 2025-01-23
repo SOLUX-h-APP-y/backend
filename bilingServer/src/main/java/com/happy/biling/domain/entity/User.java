@@ -59,7 +59,7 @@ public class User {
     @PrePersist
     private void prePersist() {
         if (tier == null) {
-            tier = Tier.새싹;
+            tier = Tier.씨앗;
         }
     }
 }
