@@ -12,12 +12,12 @@ import java.util.Date;
 public class JwtUtil {
 
     @Value("${jwt.access.secret}")
-    private String secretKey;
+    private static String secretKey;
 
     @Value("${jwt.access.expiration}")
     private long expiration;
 
-    private Key getSigningKey() {
+    private static Key getSigningKey() {
         return Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 
@@ -39,7 +39,7 @@ public class JwtUtil {
         }
     }
 
-    public String getUserIdFromToken(String token) {
+    public static String getUserIdFromToken(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
