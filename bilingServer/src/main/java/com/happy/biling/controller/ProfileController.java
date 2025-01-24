@@ -8,6 +8,7 @@ import com.happy.biling.dto.profile.ProfileUpdateRequestDto;
 import com.happy.biling.security.JwtAuthentication;
 import com.happy.biling.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -38,6 +39,7 @@ public class ProfileController {
     }
 
     // 프로필 수정 - 자신의 프로필만 수정 가능
+    @CrossOrigin(origins = "*", methods = {RequestMethod.PATCH})
     @PatchMapping("/me")
     public ResponseEntity<ProfileResponseDto> updateProfile(
             @RequestBody ProfileUpdateRequestDto requestDto) {
@@ -47,6 +49,7 @@ public class ProfileController {
     }
 
     // 응원하기
+    @CrossOrigin(origins = "*", methods = {RequestMethod.POST})
     @PostMapping("/{receiverId}/cheers")
     public ResponseEntity<Void> addCheer(@PathVariable Long receiverId) {
         Long senderId = getCurrentUserId();

@@ -1,15 +1,12 @@
 package com.happy.biling.domain.entity;
 
+import com.happy.biling.domain.entity.enums.*;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import java.time.LocalDateTime;
 
-import com.happy.biling.domain.entity.enums.Distance;
-import com.happy.biling.domain.entity.enums.Category;
-import com.happy.biling.domain.entity.enums.PostStatus;
-import com.happy.biling.domain.entity.enums.PostType;
+import java.time.LocalDateTime;
 
 
 @Entity
@@ -40,8 +37,10 @@ public class Post {
     @Column(nullable = false)
     private Integer price;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    //    @Enumerated(EnumType.STRING)
+//    @Column(nullable = false)
+//    private Distance distance;
+    @Convert(converter = DistanceConverter.class)
     private Distance distance;
 
     @Enumerated(EnumType.STRING)
