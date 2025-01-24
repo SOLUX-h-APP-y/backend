@@ -22,10 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class ProfileService {
     private final UserRepository userRepository;
-    private final PostRepository postRepository;
+    //private final PostRepository postRepository;
     private final CheerRepository cheerRepository;
 
-    // 티어 정보를 담는 내부 클래스
     @Getter
     @AllArgsConstructor
     private static class TierInfo {
@@ -39,14 +38,15 @@ public class ProfileService {
         User user = userRepository.findById(requestDto.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // 실제 거래 완료 횟수 조회 (DB에 저장된 값 사용)
+        // 실제 거래 완료 횟수 조회
         int baseRentalCount = user.getRentalCount();
 
         // 총 응원 횟수 조회
         long totalCheers = cheerRepository.countByReceiverId(user.getId());
 
-        // 응원으로 인한 추가 카운트 (100개당 1회 추가)
+        // 응원으로 인한 추가 카운트 (30개당 1회 추가)
         int additionalCount = (int) (totalCheers / 30);
+
         // 최종 대여 횟수 = 기존 rentalCount + 응원으로 인한 추가 횟수
         int totalRentalCount = baseRentalCount + additionalCount;
 
@@ -63,22 +63,18 @@ public class ProfileService {
                 .remainingCountToNextTier(tierInfo.getRemainingCount())
                 .locationName(user.getLocationName())
                 .rentalCount(totalRentalCount)
-                .cheerCount(totalCheers)
+                .cheerCount(totalCheers)  // 총 응원 수 포함
                 .allowNotification(user.getAllowNotification())
                 .build();
     }
 
-    // 응원 횟수 조회
-    public long getTotalCheersByReceiverId(Long receiverId) {
-        return cheerRepository.countByReceiverId(receiverId);
-    }
-
-    // 프로필 수정
+    //프로필 수정
     @Transactional
     public ProfileResponseDto updateProfile(Long userId, ProfileUpdateRequestDto requestDto) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        // 닉네임 수정
         if (requestDto.hasNickname()) {
             if (!user.getNickname().equals(requestDto.getNickname())
                     && userRepository.existsByNickname(requestDto.getNickname())) {
@@ -87,15 +83,27 @@ public class ProfileService {
             user.setNickname(requestDto.getNickname());
         }
 
+        // 프로필 이미지 수정
         if (requestDto.hasProfileImage()) {
             user.setProfileImage(requestDto.getProfileImage());
         }
 
+        // 자기소개 수정
         if (requestDto.hasBio()) {
             user.setBio(requestDto.getBio());
         }
 
-        TierInfo tierInfo = calculateTierInfo(user.getRentalCount());
+        // 총 응원 횟수 조회
+        long totalCheers = cheerRepository.countByReceiverId(userId);
+
+        // 응원으로 인한 추가 카운트 (30개당 1회 추가)
+        int additionalCount = (int) (totalCheers / 30);
+
+        // 최종 대여 횟수 계산
+        int totalRentalCount = user.getRentalCount() + additionalCount;
+
+        // 티어 정보 계산
+        TierInfo tierInfo = calculateTierInfo(totalRentalCount);
 
         return ProfileResponseDto.builder()
                 .userId(user.getId())
@@ -106,7 +114,8 @@ public class ProfileService {
                 .nextTier(tierInfo.getNextTier())
                 .remainingCountToNextTier(tierInfo.getRemainingCount())
                 .locationName(user.getLocationName())
-                .rentalCount(user.getRentalCount())
+                .rentalCount(totalRentalCount)
+                .cheerCount(totalCheers)  // 총 응원 수 포함
                 .allowNotification(user.getAllowNotification())
                 .build();
     }
@@ -114,19 +123,26 @@ public class ProfileService {
     // 응원 추가
     @Transactional
     public void addCheer(CheerRequestDto requestDto) {
+        // 중복 응원 체크
         if (cheerRepository.existsBySenderIdAndReceiverId(
                 requestDto.getSenderId(),
                 requestDto.getReceiverId())) {
             throw new RuntimeException("이미 응원한 사용자입니다.");
         }
 
+        // 자기 자신 응원 방지
         if (requestDto.getSenderId().equals(requestDto.getReceiverId())) {
             throw new RuntimeException("자기 자신은 응원할 수 없습니다.");
         }
 
+        // 현재 수신자의 총 응원 수 조회
+        long currentTotalCheers = cheerRepository.countByReceiverId(requestDto.getReceiverId());
+
+        // 새로운 응원 생성 및 저장
         Cheer cheer = new Cheer();
         cheer.setSenderId(requestDto.getSenderId());
         cheer.setReceiverId(requestDto.getReceiverId());
+        cheer.setTotalCheers((int) (currentTotalCheers + 1));  // 총 응원 수 업데이트
         cheerRepository.save(cheer);
     }
 
