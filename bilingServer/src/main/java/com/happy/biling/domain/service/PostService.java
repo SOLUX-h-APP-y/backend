@@ -32,8 +32,8 @@ public class PostService {
 
     // 게시글 생성 (TODO 이미지 있도록 보완 필요)
     @Transactional
-    public Post createPost(PostWriteRequestDto requestDto) {
-        User writer = userRepository.findById(requestDto.getWriterId())
+    public Post createPost(PostWriteRequestDto requestDto, Long userId) {
+        User writer = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
         Post post = new Post();
@@ -45,7 +45,7 @@ public class PostService {
         post.setContent(requestDto.getContent());
         post.setDistance(Distance.valueOf(requestDto.getDistance()));
         post.setCategory(Category.valueOf(requestDto.getCategory()));
-        post.setExpirationDate(LocalDateTime.now().plusDays(requestDto.getPeriod()));
+        post.setExpirationDate(LocalDateTime.now().plusDays(180));
         post.setLocationName(requestDto.getLocationName());
         post.setLocationLatitude(requestDto.getLocationLatitude());
         post.setLocationLongitude(requestDto.getLocationLongitude());
