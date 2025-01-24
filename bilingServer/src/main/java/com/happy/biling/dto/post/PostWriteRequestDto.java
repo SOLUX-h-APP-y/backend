@@ -1,8 +1,10 @@
 package com.happy.biling.dto.post;
 
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
+@Setter
 public class PostWriteRequestDto {
     private Long writerId; //토큰 생성시 토큰에서 user id 뽑아쓸 수도 있을듯
     private String type; //share borrow
