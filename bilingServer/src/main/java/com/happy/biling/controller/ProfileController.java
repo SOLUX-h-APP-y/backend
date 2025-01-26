@@ -146,10 +146,7 @@
 package com.happy.biling.controller;
 
 import com.happy.biling.domain.service.ProfileService;
-import com.happy.biling.dto.profile.CheerRequestDto;
-import com.happy.biling.dto.profile.ProfileRequestDto;
-import com.happy.biling.dto.profile.ProfileResponseDto;
-import com.happy.biling.dto.profile.ProfileUpdateRequestDto;
+import com.happy.biling.dto.profile.*;
 import com.happy.biling.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -223,22 +220,38 @@ public class ProfileController {
         }
     }
 
-    // 응원하기
-    @PostMapping("/{receiverId}/cheers")
-    public ResponseEntity<Void> addCheer(
-            @RequestHeader("Authorization") String authHeader,
-            @PathVariable Long receiverId) {
-        try {
-            String token = authHeader.substring(7);
-            Long senderId = Long.valueOf(jwtUtil.getUserIdFromToken(token));
-            log.info("senderId : {}", senderId);
-
-            CheerRequestDto requestDto = new CheerRequestDto(senderId, receiverId);
-            profileService.addCheer(requestDto);
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-        } catch (Exception e) {
-            log.error("Error adding cheer: ", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+//    // 응원하기
+//    @PostMapping("/{receiverId}/cheers")
+//    public ResponseEntity<Void> addCheer(
+//            @RequestHeader("Authorization") String authHeader,
+//            @PathVariable Long receiverId) {
+//        try {
+//            String token = authHeader.substring(7);
+//            Long senderId = Long.valueOf(jwtUtil.getUserIdFromToken(token));
+//            log.info("senderId : {}", senderId);
+//
+//            CheerRequestDto requestDto = new CheerRequestDto(senderId, receiverId);
+//            profileService.addCheer(requestDto);
+//            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+//        } catch (Exception e) {
+//            log.error("Error adding cheer: ", e);
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+//        }
+//    }
+@PostMapping("/{receiverId}/cheers")
+public ResponseEntity<CheerResponseDto> addCheer(
+        @RequestHeader("Authorization") String authHeader,
+        @PathVariable Long receiverId) {
+    try {
+        String token = authHeader.substring(7);
+        Long senderId = Long.valueOf(jwtUtil.getUserIdFromToken(token));
+        CheerRequestDto requestDto = new CheerRequestDto(senderId, receiverId);
+        CheerResponseDto response = profileService.addCheer(requestDto);
+        return ResponseEntity.ok(response);
+    } catch (Exception e) {
+        log.error("Error adding cheer: ", e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
+}
+
 }
