@@ -1,7 +1,6 @@
 package com.happy.biling.domain.entity;
 
 import java.time.LocalDateTime;
-
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,7 +21,7 @@ public class ChatMessage {
     @JoinColumn(name = "chatroom_id", nullable = false)
     private ChatRoom chatRoom;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "sender_id", nullable = false)
     private User sender;
 
