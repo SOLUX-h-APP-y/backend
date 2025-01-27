@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Getter
@@ -29,10 +30,10 @@ public class ChatRoom {
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
 
-    @Column
+    @Column(name = "last_message_content")
     private String lastMessageContent;
 
-    @Column
+    @Column(name = "last_message_time")
     private LocalDateTime lastMessageTime;
 
     @Column(updatable = false)
@@ -40,4 +41,13 @@ public class ChatRoom {
 
     @Column(nullable = false)
     private LocalDateTime updateAt = LocalDateTime.now();
+
+    @OneToMany(mappedBy = "chatRoom")
+    private List<ChatMessage> chatMessages;
+
+    public long getUnreadCount() {
+        return chatMessages.stream()
+                .filter(chatMessage -> !chatMessage.isRead())
+                .count();
+    }
 }
