@@ -8,10 +8,15 @@ import com.happy.biling.domain.repository.ChatMessageRepository;
 import com.happy.biling.domain.repository.ChatRoomRepository;
 import com.happy.biling.domain.repository.PostRepository;
 import com.happy.biling.domain.repository.UserRepository;
+import com.happy.biling.dto.chat.ChatRoomResponse;
 import com.happy.biling.dto.chat.SendMessageRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ChatMessageService {
@@ -60,5 +65,28 @@ public class ChatMessageService {
         chatMessage.setIsRead(false);
 
         chatMessageRepository.save(chatMessage);
+    }
+
+    @Transactional
+    public List<ChatRoomResponse> getChatRooms(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<ChatRoom> chatRooms = chatRoomRepository.findByOwnerOrRenter(user, user);
+
+        return chatRooms.stream().map(chatRoom -> {
+            User otherUser = chatRoom.getOwner().equals(user) ? chatRoom.getRenter() : chatRoom.getOwner();
+
+            ChatMessage lastMessage = chatMessageRepository.findTopByChatRoomOrderByCreateAtDesc(chatRoom)
+                    .orElse(null);
+
+            return new ChatRoomResponse(
+                    otherUser.getProfileImage(),
+                    chatRoom.getPost().getTitle(),
+                    lastMessage != null ? lastMessage.getContent() : "No messages",
+                    chatRoom.getUnreadCount(),
+                    lastMessage != null ? lastMessage.getCreateAt() : LocalDateTime.now()
+            );
+        }).collect(Collectors.toList());
     }
 }

@@ -1,10 +1,10 @@
 package com.happy.biling.domain.entity;
 
-import java.time.LocalDateTime;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -28,7 +28,7 @@ public class ChatMessage {
     @Column(nullable = false)
     private String content;
 
-    @Column(nullable = false)
+    @Column(name = "is_read")
     private Boolean isRead = false;
 
     @Column(updatable = false)
@@ -36,4 +36,12 @@ public class ChatMessage {
 
     @Column(nullable = false)
     private LocalDateTime updateAt = LocalDateTime.now();
+
+    public boolean isRead() {
+        return isRead != null && isRead;
+    }
+
+    public void setRead(boolean read) {
+        this.isRead = read;
+    }
 }
