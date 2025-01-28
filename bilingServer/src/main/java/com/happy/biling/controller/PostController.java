@@ -23,37 +23,24 @@ public class PostController {
 
     private final PostService postService;
     private final JwtUtil jwtUtil;
+    
+    // 게시글 상세보기
+    @GetMapping("/posts/{id}")
+    public ResponseEntity<PostDetailResponseDto> getPostDetail(
+            @PathVariable("id") Long id,
+            @RequestHeader("Authorization") String authHeader) {
 
-    //    @PostMapping("/posts")
-//    public ResponseEntity<Void> createPost(
-//            @RequestHeader("Authorization") String authHeader,
-//            @RequestBody PostWriteRequestDto requestDto) {
-//
-//        try {
-//            String token = authHeader.substring(7); //"Bearer " 이후의 토큰 추출
-//            Long userId = Long.valueOf(jwtUtil.getUserIdFromToken(token));
-//            postService.createPost(requestDto, userId);
-//            return ResponseEntity.status(HttpStatus.NO_CONTENT).build(); //성공
-//        } catch (Exception e) {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); //실패
-//        }
-//    }
-
-    //    @GetMapping("/posts/{id}")
-//    public ResponseEntity<PostDetailResponseDto> getPostDetail(
-//            @PathVariable("id") Long id,
-//            @RequestHeader("Authorization") String authHeader) {
-//
-//        try {
-//            String token = authHeader.substring(7); // "Bearer " 이후의 토큰 추출
-//            Long userId = Long.valueOf(jwtUtil.getUserIdFromToken(token));
-//            PostDetailResponseDto responseDto = postService.getPostDetail(id, userId);
-//            return ResponseEntity.ok(responseDto);
-//        } catch (Exception e) {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); //실패
-//        }
-//    }
-// 게시글 생성
+        try {
+            String token = authHeader.substring(7); // "Bearer " 이후의 토큰 추출
+            Long userId = Long.valueOf(jwtUtil.getUserIdFromToken(token));
+            PostDetailResponseDto responseDto = postService.getPostDetail(id, userId);
+            return ResponseEntity.ok(responseDto);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); //실패
+        }
+    }
+    
+    // 게시글 생성
     @PostMapping(value = "/posts", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> createPost(
             @RequestHeader("Authorization") String authHeader,
@@ -74,12 +61,6 @@ public class PostController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 실패
         }
     }
-
-    // 게시글 상세 조회
-    @GetMapping("/posts/{id}")
-    public ResponseEntity<PostDetailResponseDto> getPostDetail(
-            @PathVariable("id") Long id,
-            @RequestHeader("Authorization") String authHeader) {
 
         try {
             String token = authHeader.substring(7); // "Bearer " 이후의 토큰 추출
