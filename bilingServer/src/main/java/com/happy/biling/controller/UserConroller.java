@@ -31,10 +31,5 @@ public class UserConroller {
         }
     }
 
-    @GetMapping("/user/info")
-    public String getUserInfo() {
-        String userId = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return "Hello, user with ID: " + userId;
-    }
 
 }
