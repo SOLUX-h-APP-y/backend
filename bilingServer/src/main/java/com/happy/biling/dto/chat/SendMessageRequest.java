@@ -4,6 +4,7 @@ public class SendMessageRequest {
     private Long postId;
     private Long ownerId;
     private Long renterId;
+    private Long chatRoomId;
     private String content;
 
     public Long getPostId() {
@@ -28,6 +29,14 @@ public class SendMessageRequest {
 
     public void setRenterId(Long renterId) {
         this.renterId = renterId;
+    }
+
+    public Long getChatRoomId() {
+        return chatRoomId;
+    }
+
+    public void setChatRoomId(Long chatRoomId) {
+        this.chatRoomId = chatRoomId;
     }
 
     public String getContent() {

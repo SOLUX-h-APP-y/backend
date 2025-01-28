@@ -55,13 +55,20 @@ public class ChatMessageService {
         User renter = userRepository.findById(request.getRenterId())
                 .orElseThrow(() -> new RuntimeException("Renter not found"));
 
-        ChatRoom chatRoom = chatRoomRepository.findByPostAndOwnerAndRenter(post, owner, renter);
-        if (chatRoom == null) {
-            chatRoom = new ChatRoom();
-            chatRoom.setPost(post);
-            chatRoom.setOwner(owner);
-            chatRoom.setRenter(renter);
-            chatRoom = chatRoomRepository.save(chatRoom);
+        ChatRoom chatRoom;
+
+        if (request.getChatRoomId() != null) {
+            chatRoom = chatRoomRepository.findById(request.getChatRoomId())
+                    .orElseThrow(() -> new RuntimeException("Chat room not found"));
+        } else {
+            chatRoom = chatRoomRepository.findByPostAndOwnerAndRenter(post, owner, renter);
+            if (chatRoom == null) {
+                chatRoom = new ChatRoom();
+                chatRoom.setPost(post);
+                chatRoom.setOwner(owner);
+                chatRoom.setRenter(renter);
+                chatRoom = chatRoomRepository.save(chatRoom);
+            }
         }
 
         ChatMessage chatMessage = new ChatMessage();
