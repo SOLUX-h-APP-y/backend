@@ -3,18 +3,28 @@ package com.happy.biling.dto.chat;
 import java.time.LocalDateTime;
 
 public class ChatRoomResponse {
+    private Long chatRoomId;
     private String profileImage;
     private String postTitle;
     private String lastMessageContent;
     private long unreadCount;
     private LocalDateTime lastMessageTimestamp;
 
-    public ChatRoomResponse(String profileImage, String postTitle, String lastMessageContent, long unreadCount, LocalDateTime lastMessageTimestamp) {
+    public ChatRoomResponse(Long chatRoomId, String profileImage, String postTitle, String lastMessageContent, long unreadCount, LocalDateTime lastMessageTimestamp) {
+        this.chatRoomId = chatRoomId;
         this.profileImage = profileImage;
         this.postTitle = postTitle;
         this.lastMessageContent = lastMessageContent;
         this.unreadCount = unreadCount;
         this.lastMessageTimestamp = lastMessageTimestamp;
+    }
+
+    public Long getChatRoomId() {
+        return chatRoomId;
+    }
+
+    public void setChatRoomId(Long chatRoomId) {
+        this.chatRoomId = chatRoomId;
     }
 
     public String getProfileImage() {

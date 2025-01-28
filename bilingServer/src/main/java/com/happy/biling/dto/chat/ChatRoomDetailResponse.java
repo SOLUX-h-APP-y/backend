@@ -3,18 +3,28 @@ package com.happy.biling.dto.chat;
 import java.util.List;
 
 public class ChatRoomDetailResponse {
+    private Long chatRoomId;
     private String postTitle;
     private String postLocation;
     private String postImage;
     private String otherUserProfileImage;
     private List<MessageResponse> messages;
 
-    public ChatRoomDetailResponse(String postTitle, String postLocation, String postImage, String otherUserProfileImage, List<MessageResponse> messages) {
+    public ChatRoomDetailResponse(Long chatRoomId, String postTitle, String postLocation, String postImage, String otherUserProfileImage, List<MessageResponse> messages) {
+        this.chatRoomId = chatRoomId;
         this.postTitle = postTitle;
         this.postLocation = postLocation;
         this.postImage = postImage;
         this.otherUserProfileImage = otherUserProfileImage;
         this.messages = messages;
+    }
+
+    public Long getChatRoomId() {
+        return chatRoomId;
+    }
+
+    public void setChatRoomId(Long chatRoomId) {
+        this.chatRoomId = chatRoomId;
     }
 
     public String getPostTitle() {
