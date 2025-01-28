@@ -171,13 +171,11 @@ public class PostService {
                     .orElse(null);
 
             FilteredPostPreviewResponseDto responseDto = new FilteredPostPreviewResponseDto();
-            responseDto.setPostStatus(post.getStatus().name());
             responseDto.setPostId(post.getId());
             responseDto.setTitle(post.getTitle());
             responseDto.setPrice(post.getPrice());
             responseDto.setPreviewImage(previewImage);
             responseDto.setLocationName(post.getLocationName());
-            responseDto.setPostType(post.getType().name());
             
             return responseDto;
         }).collect(Collectors.toList());
