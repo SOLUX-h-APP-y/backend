@@ -65,4 +65,23 @@ public class UserConroller {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+    
+    @GetMapping("/users/address/dong")
+    public ResponseEntity<AddressResponseDto> getAddressByUser(
+            @RequestHeader("Authorization") String authHeader) {
+
+    	Long userId;
+    	
+        try {
+            String token = authHeader.substring(7); // "Bearer " 제거
+            userId = Long.valueOf(jwtUtil.getUserIdFromToken(token));
+                
+            AddressResponseDto address = userService.getAddressByUserId(userId);
+            return ResponseEntity.ok(address);
+
+        } catch (Exception e) {
+            log.error("Error fetching address", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }

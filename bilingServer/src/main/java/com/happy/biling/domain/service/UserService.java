@@ -2,7 +2,7 @@ package com.happy.biling.domain.service;
 
 import com.happy.biling.domain.entity.User;
 import com.happy.biling.domain.repository.UserRepository;
-import com.happy.biling.dto.auth.KakaoUserInfoResponseDto;
+import com.happy.biling.dto.auth.AddressResponseDto;
 import com.happy.biling.dto.auth.NicknameCheckRequestDto;
 import com.happy.biling.dto.auth.SignUpRequestDto;
 
@@ -42,6 +42,19 @@ public class UserService {
 		user.setNickname(requestDto.getNickName());
 
         return userRepository.save(user);
+    }
+    
+    public AddressResponseDto getAddressByUserId(Long userId) {
+    	AddressResponseDto responseDto = new AddressResponseDto();
+    	
+    	User user = userRepository.findById(userId)
+    	            .orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
+    	
+        String userLocationName = user.getLocationName();
+        String[] splitAddress = userLocationName.split(" "); // 공백 기준으로 나눔
+    	responseDto.setAddress(splitAddress[splitAddress.length - 1]); // 맨 마지막 단어(동)
+    	
+        return responseDto;
     }
 
 }
