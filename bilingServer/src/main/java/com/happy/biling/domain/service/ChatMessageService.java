@@ -4,9 +4,11 @@ import com.happy.biling.domain.entity.ChatMessage;
 import com.happy.biling.domain.entity.ChatRoom;
 import com.happy.biling.domain.entity.Post;
 import com.happy.biling.domain.entity.User;
+import com.happy.biling.domain.entity.PostImage;
 import com.happy.biling.domain.repository.ChatMessageRepository;
 import com.happy.biling.domain.repository.ChatRoomRepository;
 import com.happy.biling.domain.repository.PostRepository;
+import com.happy.biling.domain.repository.PostImageRepository;
 import com.happy.biling.domain.repository.UserRepository;
 import com.happy.biling.dto.chat.ChatRoomResponse;
 import com.happy.biling.dto.chat.ChatRoomDetailResponse;
@@ -35,6 +37,9 @@ public class ChatMessageService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private PostImageRepository postImageRepository;
+
     @Transactional
     public void sendMessage(SendMessageRequest request) {
         Post post = postRepository.findById(request.getPostId())
@@ -51,7 +56,6 @@ public class ChatMessageService {
                 .orElseThrow(() -> new RuntimeException("Renter not found"));
 
         ChatRoom chatRoom = chatRoomRepository.findByPostAndOwnerAndRenter(post, owner, renter);
-
         if (chatRoom == null) {
             chatRoom = new ChatRoom();
             chatRoom.setPost(post);
@@ -100,18 +104,21 @@ public class ChatMessageService {
         Post post = chatRoom.getPost();
         User otherUser = chatRoom.getRenter();
 
+        String postImageUrl = postImageRepository.findTopByPostOrderByOrderSequenceAsc(post)
+                .map(PostImage::getImageUrl)
+                .orElse(null);
+
         List<ChatMessage> messages = chatMessageRepository.findByChatRoomOrderByCreateAtAsc(chatRoom);
 
         return new ChatRoomDetailResponse(
-                post.getTitle(), // 글 제목
-                post.getDistance().toString(), // 거리 정보
-                post.getLocationName(), // 위치 정보
-                //post.getImage(), // 게시글 사진
-                otherUser.getProfileImage(), // 상대방 프로필 사진
+                post.getTitle(),
+                post.getLocationName(),
+                postImageUrl,
+                otherUser.getProfileImage(),
                 messages.stream().map(message -> new MessageResponse(
-                        message.getSender().getNickname(), // 메시지 보낸 사람 닉네임
-                        message.getContent(), // 메시지 내용
-                        message.getCreateAt() // 메시지 시간
+                        message.getSender().getNickname(),
+                        message.getContent(),
+                        message.getCreateAt()
                 )).collect(Collectors.toList())
         );
     }
