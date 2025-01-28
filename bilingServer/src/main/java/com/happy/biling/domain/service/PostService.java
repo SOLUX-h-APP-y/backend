@@ -75,6 +75,30 @@ public class PostService {
         return post;
     }
     
+    public void deletePost(Long postId, Long userId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+        
+        if (!post.getWriter().getId().equals(userId)) {
+            throw new IllegalArgumentException("You are not the writer of this post");
+        }
+
+        if ("거래완료".equals(post.getStatus().name())) {
+            throw new IllegalStateException("Cannot delete a post with status '거래완료'");
+        }
+
+        //TODO 포스트와 연관된 채팅이 있을 때도 삭제하면 안되나? 거래완료를 못 지우게 하면 리뷰 같은 건 자동적으로 고려하긴 함
+        
+        // postImage 삭제
+        List<PostImage> postImages = postImageRepository.findByPost(post);
+        if (!postImages.isEmpty()) {
+            postImageRepository.deleteAll(postImages);
+        }
+
+        // 게시글 삭제
+        postRepository.delete(post);
+    }
+    
     public PostDetailResponseDto getPostDetail(Long postId, Long userId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
