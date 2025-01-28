@@ -57,6 +57,23 @@ public class PostController {
         }
     }
     
+    // 게시글 상태 변경
+    @PatchMapping("/posts/{id}")
+    public ResponseEntity<PostDetailResponseDto> updatePostStatus(
+            @PathVariable("id") Long id,
+            @RequestParam(value = "status", required = false) String status,
+            @RequestHeader("Authorization") String authHeader) {
+
+        try {
+            String token = authHeader.substring(7); // "Bearer " 이후의 토큰 추출
+            Long userId = Long.valueOf(jwtUtil.getUserIdFromToken(token));
+            postService.updatePostStatus(id, userId, status);
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
     // 게시글 생성
     @PostMapping(value = "/posts", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> createPost(

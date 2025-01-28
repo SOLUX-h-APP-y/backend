@@ -6,6 +6,7 @@ import com.happy.biling.domain.entity.Review;
 import com.happy.biling.domain.entity.User;
 import com.happy.biling.domain.entity.enums.Category;
 import com.happy.biling.domain.entity.enums.Distance;
+import com.happy.biling.domain.entity.enums.PostStatus;
 import com.happy.biling.domain.entity.enums.PostType;
 import com.happy.biling.domain.repository.PostImageRepository;
 import com.happy.biling.domain.repository.PostRepository;
@@ -97,6 +98,20 @@ public class PostService {
 
         // 게시글 삭제
         postRepository.delete(post);
+    }
+    
+    public void updatePostStatus(Long postId, Long userId, String status) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+        
+        if (!post.getWriter().getId().equals(userId)) {
+            throw new IllegalArgumentException("You are not the writer of this post");
+        }
+        
+        PostStatus newStatus = PostStatus.valueOf(status);
+        post.setStatus(newStatus);;
+        
+        postRepository.save(post);
     }
     
     public PostDetailResponseDto getPostDetail(Long postId, Long userId) {
