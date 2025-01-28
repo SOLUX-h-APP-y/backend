@@ -2,12 +2,14 @@ package com.happy.biling.domain.service;
 
 import com.happy.biling.domain.entity.Post;
 import com.happy.biling.domain.entity.PostImage;
+import com.happy.biling.domain.entity.Review;
 import com.happy.biling.domain.entity.User;
 import com.happy.biling.domain.entity.enums.Category;
 import com.happy.biling.domain.entity.enums.Distance;
 import com.happy.biling.domain.entity.enums.PostType;
 import com.happy.biling.domain.repository.PostImageRepository;
 import com.happy.biling.domain.repository.PostRepository;
+import com.happy.biling.domain.repository.ReviewRepository;
 import com.happy.biling.domain.repository.UserRepository;
 import com.happy.biling.dto.post.PostDetailResponseDto;
 import com.happy.biling.dto.post.PostPreviewResponseDto;
@@ -31,6 +33,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostImageRepository postImageRepository;
     private final UserRepository userRepository;
+    private final ReviewRepository reviewRepository;
     private final S3Uploader s3Uploader;
 
     // 게시글 생성 (TODO 이미지 있도록 보완 필요)
@@ -100,6 +103,7 @@ public class PostService {
 
         return responseDto;
     }
+    
     // 게시글 목록 조회
     public List<PostPreviewResponseDto> getPostList() {
         List<Post> posts = postRepository.findAll(); // 모든 게시글 조회
@@ -122,17 +126,26 @@ public class PostService {
         }).collect(Collectors.toList());
     }
 
-    public List<PostPreviewResponseDto> getMyPosts(Long userId) {
+    
+    public List<PostPreviewResponseDto> getPostsByUserId(Long userId) {
         log.info("Fetching posts for user: {}", userId);
 
-        // 내가 쓴 게시글 조회
+        // 유저가 작성한 게시글 조회
         List<Post> posts = postRepository.findByWriterId(userId);
 
         return posts.stream().map(post -> {
             // 대표 이미지 가져오기
             String previewImage = postImageRepository.findTopByPostOrderByOrderSequenceAsc(post)
                     .map(PostImage::getImageUrl)
-                    .orElse(null); // 대표 이미지가 없으면 null 반환
+                    .orElse(null);
+
+            Long reviewId = null;
+            // postStatus가 "거래완료"인 경우 리뷰 조회
+            if ("거래완료".equals(post.getStatus().name())) {
+                reviewId = reviewRepository.findByPostIdAndRevieweeId(post.getId(), userId)
+                        .map(Review::getId)
+                        .orElse(null);
+            }
 
             // 목록 데이터 구성
             PostPreviewResponseDto responseDto = new PostPreviewResponseDto();
@@ -142,9 +155,10 @@ public class PostService {
             responseDto.setPreviewImage(previewImage); // 대표 이미지 설정
             responseDto.setLocationName(post.getLocationName()); // 위치 정보
             responseDto.setPostType(post.getType().name());
+            responseDto.setPostStatus(post.getStatus().name());
+            responseDto.setReviewId(reviewId);
             return responseDto;
+            
         }).collect(Collectors.toList());
     }
-
-
 }

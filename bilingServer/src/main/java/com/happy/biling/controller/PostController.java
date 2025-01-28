@@ -62,39 +62,16 @@ public class PostController {
         }
     }
 
-        try {
-            String token = authHeader.substring(7); // "Bearer " 이후의 토큰 추출
-            Long userId = Long.valueOf(jwtUtil.getUserIdFromToken(token));
-            PostDetailResponseDto responseDto = postService.getPostDetail(id, userId);
-            return ResponseEntity.ok(responseDto);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 실패
-        }
-    }
     // 게시글 목록 조회
     @GetMapping("/posts")
     public ResponseEntity<List<PostPreviewResponseDto>> getPostList() {
-        List<PostPreviewResponseDto> postList = postService.getPostList();
-        return ResponseEntity.ok(postList);
-    }
-    // 내가 쓴 게시글 목록 조회
-    @GetMapping("/posts/me")
-    public ResponseEntity<List<PostPreviewResponseDto>> getMyPosts(
-            @RequestHeader("Authorization") String authHeader) {
-
         try {
-            String token = authHeader.substring(7); // "Bearer " 이후의 토큰 추출
-            Long userId = Long.valueOf(jwtUtil.getUserIdFromToken(token));
-            log.info("Fetching posts for User ID: {}", userId);
-
-            List<PostPreviewResponseDto> postList = postService.getMyPosts(userId);
+            List<PostPreviewResponseDto> postList = postService.getPostList();
+            log.info("Getting posts completed.");
             return ResponseEntity.ok(postList);
         } catch (Exception e) {
-            log.error("Error while fetching user's posts", e);
+            log.error("Error during getting posts", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 실패
         }
     }
-
-
-
 }
