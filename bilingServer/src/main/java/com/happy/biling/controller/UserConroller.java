@@ -1,21 +1,31 @@
 package com.happy.biling.controller;
 
 import com.happy.biling.domain.service.UserService;
+import com.happy.biling.domain.service.PostService;
 import com.happy.biling.dto.auth.*;
+import com.happy.biling.dto.post.PostPreviewResponseDto;
+import com.happy.biling.security.JwtUtil;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 public class UserConroller {
     
     private final UserService userService; 
+    private final PostService postService;
+    private final JwtUtil jwtUtil;
     
     @GetMapping("/auth/check-nickname")
     public ResponseEntity<Map<String, Boolean>> createPost(@RequestBody NicknameCheckRequestDto requestDto) {
@@ -31,10 +41,28 @@ public class UserConroller {
         }
     }
 
-    @GetMapping("/user/info")
-    public String getUserInfo() {
-        String userId = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return "Hello, user with ID: " + userId;
-    }
+    @GetMapping("/users/{id}/posts")
+    public ResponseEntity<List<PostPreviewResponseDto>> getPostsByUser(
+            @PathVariable("id") String userId,
+            @RequestHeader("Authorization") String authHeader) {
 
+        try {
+            Long userIdToFetch;
+
+            // userId가 "me"이면 토큰에서 유저 ID 직접 추출
+            if ("me".equals(userId)) {
+                String token = authHeader.substring(7); // "Bearer " 제거
+                userIdToFetch = Long.valueOf(jwtUtil.getUserIdFromToken(token));
+            } else {
+                userIdToFetch = Long.valueOf(userId);
+            }
+
+            List<PostPreviewResponseDto> posts = postService.getPostsByUserId(userIdToFetch);
+            return ResponseEntity.ok(posts);
+
+        } catch (Exception e) {
+            log.error("Error fetching posts", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }

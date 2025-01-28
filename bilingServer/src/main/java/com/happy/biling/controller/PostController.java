@@ -1,6 +1,7 @@
 package com.happy.biling.controller;
 
 import com.happy.biling.domain.service.PostService;
+import com.happy.biling.dto.post.FilteredPostPreviewResponseDto;
 import com.happy.biling.dto.post.PostDetailResponseDto;
 import com.happy.biling.dto.post.PostPreviewResponseDto;
 import com.happy.biling.dto.post.PostWriteRequestDto;
@@ -23,37 +24,24 @@ public class PostController {
 
     private final PostService postService;
     private final JwtUtil jwtUtil;
+    
+    // 게시글 상세보기
+    @GetMapping("/posts/{id}")
+    public ResponseEntity<PostDetailResponseDto> getPostDetail(
+            @PathVariable("id") Long id,
+            @RequestHeader("Authorization") String authHeader) {
 
-    //    @PostMapping("/posts")
-//    public ResponseEntity<Void> createPost(
-//            @RequestHeader("Authorization") String authHeader,
-//            @RequestBody PostWriteRequestDto requestDto) {
-//
-//        try {
-//            String token = authHeader.substring(7); //"Bearer " 이후의 토큰 추출
-//            Long userId = Long.valueOf(jwtUtil.getUserIdFromToken(token));
-//            postService.createPost(requestDto, userId);
-//            return ResponseEntity.status(HttpStatus.NO_CONTENT).build(); //성공
-//        } catch (Exception e) {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); //실패
-//        }
-//    }
-
-    //    @GetMapping("/posts/{id}")
-//    public ResponseEntity<PostDetailResponseDto> getPostDetail(
-//            @PathVariable("id") Long id,
-//            @RequestHeader("Authorization") String authHeader) {
-//
-//        try {
-//            String token = authHeader.substring(7); // "Bearer " 이후의 토큰 추출
-//            Long userId = Long.valueOf(jwtUtil.getUserIdFromToken(token));
-//            PostDetailResponseDto responseDto = postService.getPostDetail(id, userId);
-//            return ResponseEntity.ok(responseDto);
-//        } catch (Exception e) {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); //실패
-//        }
-//    }
-// 게시글 생성
+        try {
+            String token = authHeader.substring(7); // "Bearer " 이후의 토큰 추출
+            Long userId = Long.valueOf(jwtUtil.getUserIdFromToken(token));
+            PostDetailResponseDto responseDto = postService.getPostDetail(id, userId);
+            return ResponseEntity.ok(responseDto);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); //실패
+        }
+    }
+    
+    // 게시글 생성
     @PostMapping(value = "/posts", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> createPost(
             @RequestHeader("Authorization") String authHeader,
@@ -75,45 +63,27 @@ public class PostController {
         }
     }
 
-    // 게시글 상세 조회
-    @GetMapping("/posts/{id}")
-    public ResponseEntity<PostDetailResponseDto> getPostDetail(
-            @PathVariable("id") Long id,
-            @RequestHeader("Authorization") String authHeader) {
-
-        try {
-            String token = authHeader.substring(7); // "Bearer " 이후의 토큰 추출
-            Long userId = Long.valueOf(jwtUtil.getUserIdFromToken(token));
-            PostDetailResponseDto responseDto = postService.getPostDetail(id, userId);
-            return ResponseEntity.ok(responseDto);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 실패
-        }
-    }
     // 게시글 목록 조회
     @GetMapping("/posts")
-    public ResponseEntity<List<PostPreviewResponseDto>> getPostList() {
-        List<PostPreviewResponseDto> postList = postService.getPostList();
-        return ResponseEntity.ok(postList);
-    }
-    // 내가 쓴 게시글 목록 조회
-    @GetMapping("/posts/me")
-    public ResponseEntity<List<PostPreviewResponseDto>> getMyPosts(
+    public ResponseEntity<List<FilteredPostPreviewResponseDto>> getFilteredPosts(
+            @RequestParam("type") String type,
+            @RequestParam(value = "category", required = false) String category,
+            @RequestParam(value = "radius", required = false) String radius,
+            @RequestParam(value = "keyword", required = false) String keyword,
             @RequestHeader("Authorization") String authHeader) {
 
         try {
-            String token = authHeader.substring(7); // "Bearer " 이후의 토큰 추출
+            String token = authHeader.substring(7); // "Bearer " 제거
             Long userId = Long.valueOf(jwtUtil.getUserIdFromToken(token));
-            log.info("Fetching posts for User ID: {}", userId);
 
-            List<PostPreviewResponseDto> postList = postService.getMyPosts(userId);
-            return ResponseEntity.ok(postList);
+            List<FilteredPostPreviewResponseDto> posts = postService.getFilteredPosts(
+                    type, category, radius, keyword, userId
+            );
+
+            return ResponseEntity.ok(posts);
         } catch (Exception e) {
-            log.error("Error while fetching user's posts", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 실패
+            log.error("Error fetching filtered posts", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
-
-
 }
