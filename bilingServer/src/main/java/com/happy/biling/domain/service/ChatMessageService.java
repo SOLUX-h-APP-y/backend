@@ -86,7 +86,14 @@ public class ChatMessageService {
             ChatMessage lastMessage = chatMessageRepository.findTopByChatRoomOrderByCreateAtDesc(chatRoom)
                     .orElse(null);
 
+            if (lastMessage != null) {
+                chatRoom.setLastMessageContent(lastMessage.getContent());
+                chatRoom.setLastMessageTime(lastMessage.getCreateAt());
+                chatRoomRepository.save(chatRoom);
+            }
+
             return new ChatRoomResponse(
+                    chatRoom.getId(),
                     otherUser.getProfileImage(),
                     chatRoom.getPost().getTitle(),
                     lastMessage != null ? lastMessage.getContent() : "No messages",
@@ -99,7 +106,10 @@ public class ChatMessageService {
     @Transactional
     public ChatRoomDetailResponse getChatRoomDetails(Long chatRoomId) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
-                .orElseThrow(() -> new RuntimeException("ChatRoom not found"));
+                .orElseThrow(() -> new RuntimeException("Chat room not found"));
+
+        ChatMessage lastMessage = chatMessageRepository.findTopByChatRoomOrderByCreateAtDesc(chatRoom)
+                .orElseThrow(() -> new RuntimeException("No messages found for this chat room"));
 
         Post post = chatRoom.getPost();
         User otherUser = chatRoom.getRenter();
@@ -111,6 +121,7 @@ public class ChatMessageService {
         List<ChatMessage> messages = chatMessageRepository.findByChatRoomOrderByCreateAtAsc(chatRoom);
 
         return new ChatRoomDetailResponse(
+                chatRoom.getId(),
                 post.getTitle(),
                 post.getLocationName(),
                 postImageUrl,
