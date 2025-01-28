@@ -61,7 +61,7 @@ public class PostController {
     @PatchMapping("/posts/{id}")
     public ResponseEntity<PostDetailResponseDto> updatePostStatus(
             @PathVariable("id") Long id,
-            @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "status") String status,
             @RequestHeader("Authorization") String authHeader) {
 
         try {
