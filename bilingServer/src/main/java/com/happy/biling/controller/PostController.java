@@ -1,6 +1,7 @@
 package com.happy.biling.controller;
 
 import com.happy.biling.domain.service.PostService;
+import com.happy.biling.dto.post.FilteredPostPreviewResponseDto;
 import com.happy.biling.dto.post.PostDetailResponseDto;
 import com.happy.biling.dto.post.PostPreviewResponseDto;
 import com.happy.biling.dto.post.PostWriteRequestDto;
@@ -64,14 +65,25 @@ public class PostController {
 
     // 게시글 목록 조회
     @GetMapping("/posts")
-    public ResponseEntity<List<PostPreviewResponseDto>> getPostList() {
+    public ResponseEntity<List<FilteredPostPreviewResponseDto>> getFilteredPosts(
+            @RequestParam("type") String type,
+            @RequestParam(value = "category", required = false) String category,
+            @RequestParam(value = "radius", required = false) String radius,
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestHeader("Authorization") String authHeader) {
+
         try {
-            List<PostPreviewResponseDto> postList = postService.getPostList();
-            log.info("Getting posts completed.");
-            return ResponseEntity.ok(postList);
+            String token = authHeader.substring(7); // "Bearer " 제거
+            Long userId = Long.valueOf(jwtUtil.getUserIdFromToken(token));
+
+            List<FilteredPostPreviewResponseDto> posts = postService.getFilteredPosts(
+                    type, category, radius, keyword, userId
+            );
+
+            return ResponseEntity.ok(posts);
         } catch (Exception e) {
-            log.error("Error during getting posts", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 실패
+            log.error("Error fetching filtered posts", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 }

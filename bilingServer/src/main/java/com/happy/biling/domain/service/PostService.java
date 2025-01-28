@@ -11,6 +11,7 @@ import com.happy.biling.domain.repository.PostImageRepository;
 import com.happy.biling.domain.repository.PostRepository;
 import com.happy.biling.domain.repository.ReviewRepository;
 import com.happy.biling.domain.repository.UserRepository;
+import com.happy.biling.dto.post.FilteredPostPreviewResponseDto;
 import com.happy.biling.dto.post.PostDetailResponseDto;
 import com.happy.biling.dto.post.PostPreviewResponseDto;
 import com.happy.biling.dto.post.PostWriteRequestDto;
@@ -36,7 +37,7 @@ public class PostService {
     private final ReviewRepository reviewRepository;
     private final S3Uploader s3Uploader;
 
-    // 게시글 생성 (TODO 이미지 있도록 보완 필요)
+    // 게시글 생성
     @Transactional
     public Post createPost(PostWriteRequestDto requestDto, Long userId) {
         User writer = userRepository.findById(userId)
@@ -104,29 +105,7 @@ public class PostService {
         return responseDto;
     }
     
-    // 게시글 목록 조회
-    public List<PostPreviewResponseDto> getPostList() {
-        List<Post> posts = postRepository.findAll(); // 모든 게시글 조회
-
-        return posts.stream().map(post -> {
-            // 대표 이미지 가져오기
-            String previewImage = postImageRepository.findTopByPostOrderByOrderSequenceAsc(post)
-                    .map(PostImage::getImageUrl)
-                    .orElse(null); // 대표 이미지가 없으면 null 반환
-
-            // 목록 데이터 구성
-            PostPreviewResponseDto responseDto = new PostPreviewResponseDto();
-            responseDto.setPostId(post.getId());
-            responseDto.setTitle(post.getTitle());
-            responseDto.setPrice(post.getPrice());
-            responseDto.setPreviewImage(previewImage); // 대표 이미지 설정
-            responseDto.setLocationName(post.getLocationName()); // 위치 정보 설정
-            responseDto.setPostType(post.getType().name());
-            return responseDto;
-        }).collect(Collectors.toList());
-    }
-
-    
+    //특정 유저 게시글 조회
     public List<PostPreviewResponseDto> getPostsByUserId(Long userId) {
         log.info("Fetching posts for user: {}", userId);
 
@@ -160,5 +139,72 @@ public class PostService {
             return responseDto;
             
         }).collect(Collectors.toList());
+    }
+
+    public List<FilteredPostPreviewResponseDto> getFilteredPosts(String type, String category, String radius, String keyword, Long userId) {
+        log.info("Filtering posts with type: {}, category: {}, radius: {}, keyword: {}, userId: {}", type, category, radius, keyword, userId);
+
+        // 현재 유저의 위치 가져오기
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
+        Double userLatitude = user.getLocationLatitude();
+        Double userLongitude = user.getLocationLongitude();
+
+        // 조건에 따라 게시글 필터링
+        List<Post> filteredPosts = postRepository.findAll().stream()
+                .filter(post -> post.getType().name().equalsIgnoreCase(type)) // type 필터
+                .filter(post -> isValidCategory(post.getCategory(), category)) // category 필터
+                .filter(post -> isWithinRadius(post.getLocationLatitude(), post.getLocationLongitude(), userLatitude, userLongitude, radius)) // 거리 필터
+                .filter(post -> isValidKeyword(post.getTitle(), keyword)) // keyword 필터
+                .filter(post -> post.getExpirationDate().isAfter(LocalDateTime.now())) // 유효한 게시글
+                .collect(Collectors.toList());
+
+        // 게시글 목록을 DTO로 변환
+        return filteredPosts.stream().map(post -> {
+            String previewImage = postImageRepository.findTopByPostOrderByOrderSequenceAsc(post)
+                    .map(PostImage::getImageUrl)
+                    .orElse(null);
+
+            FilteredPostPreviewResponseDto responseDto = new FilteredPostPreviewResponseDto();
+            responseDto.setPostStatus(post.getStatus().name());
+            responseDto.setPostId(post.getId());
+            responseDto.setTitle(post.getTitle());
+            responseDto.setPrice(post.getPrice());
+            responseDto.setPreviewImage(previewImage);
+            responseDto.setLocationName(post.getLocationName());
+            responseDto.setPostType(post.getType().name());
+            
+            return responseDto;
+        }).collect(Collectors.toList());
+    }
+
+    private boolean isValidCategory(Category postCategory, String requestedCategory) {
+        return requestedCategory == null || requestedCategory.equalsIgnoreCase("전체") || postCategory.name().equalsIgnoreCase(requestedCategory);
+    }
+
+    private boolean isWithinRadius(Double postLat, Double postLon, Double userLat, Double userLon, String radius) {
+        if (radius == null || radius.equalsIgnoreCase("거리무관")) return true;
+
+        double distance = calculateDistance(userLat, userLon, postLat, postLon);
+        int radiusValue = Integer.parseInt(radius.replace("km", "")); // 3km, 5km, 10km 처리
+        return distance <= radiusValue;
+    }
+
+    private boolean isValidKeyword(String postTitle, String keyword) {
+        return keyword == null || postTitle.toLowerCase().contains(keyword.toLowerCase());
+    }
+
+    private double calculateDistance(Double lat1, Double lon1, Double lat2, Double lon2) {
+        final int EARTH_RADIUS = 6371; // 지구 반지름(km)
+
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                   Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                   Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return EARTH_RADIUS * c;
     }
 }
