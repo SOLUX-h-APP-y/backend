@@ -11,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -44,6 +43,7 @@ public class UserConroller {
     @GetMapping("/users/{id}/posts")
     public ResponseEntity<List<PostPreviewResponseDto>> getPostsByUser(
             @PathVariable("id") String userId,
+            @RequestParam(value = "status", required = false) String status,
             @RequestHeader("Authorization") String authHeader) {
 
         try {
@@ -57,7 +57,7 @@ public class UserConroller {
                 userIdToFetch = Long.valueOf(userId);
             }
 
-            List<PostPreviewResponseDto> posts = postService.getPostsByUserId(userIdToFetch);
+            List<PostPreviewResponseDto> posts = postService.getPostsByUserId(userIdToFetch, status);
             return ResponseEntity.ok(posts);
 
         } catch (Exception e) {

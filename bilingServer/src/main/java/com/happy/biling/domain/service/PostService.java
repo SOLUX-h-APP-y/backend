@@ -6,6 +6,7 @@ import com.happy.biling.domain.entity.Review;
 import com.happy.biling.domain.entity.User;
 import com.happy.biling.domain.entity.enums.Category;
 import com.happy.biling.domain.entity.enums.Distance;
+import com.happy.biling.domain.entity.enums.PostStatus;
 import com.happy.biling.domain.entity.enums.PostType;
 import com.happy.biling.domain.repository.PostImageRepository;
 import com.happy.biling.domain.repository.PostRepository;
@@ -75,6 +76,44 @@ public class PostService {
         return post;
     }
     
+    public void deletePost(Long postId, Long userId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+        
+        if (!post.getWriter().getId().equals(userId)) {
+            throw new IllegalArgumentException("You are not the writer of this post");
+        }
+
+        if ("거래완료".equals(post.getStatus().name())) {
+            throw new IllegalStateException("Cannot delete a post with status '거래완료'");
+        }
+
+        //TODO 포스트와 연관된 채팅이 있을 때도 삭제하면 안되나? 거래완료를 못 지우게 하면 리뷰 같은 건 자동적으로 고려하긴 함
+        
+        // postImage 삭제
+        List<PostImage> postImages = postImageRepository.findByPost(post);
+        if (!postImages.isEmpty()) {
+            postImageRepository.deleteAll(postImages);
+        }
+
+        // 게시글 삭제
+        postRepository.delete(post);
+    }
+    
+    public void updatePostStatus(Long postId, Long userId, String status) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+        
+        if (!post.getWriter().getId().equals(userId)) {
+            throw new IllegalArgumentException("You are not the writer of this post");
+        }
+        
+        PostStatus newStatus = PostStatus.valueOf(status);
+        post.setStatus(newStatus);;
+        
+        postRepository.save(post);
+    }
+    
     public PostDetailResponseDto getPostDetail(Long postId, Long userId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
@@ -105,12 +144,17 @@ public class PostService {
         return responseDto;
     }
     
-    //특정 유저 게시글 조회
-    public List<PostPreviewResponseDto> getPostsByUserId(Long userId) {
-        log.info("Fetching posts for user: {}", userId);
+    // 특정 유저 게시글 조회
+    public List<PostPreviewResponseDto> getPostsByUserId(Long userId, String status) {
+        log.info("Fetching posts for user: {}, status: {}", userId, status);
 
-        // 유저가 작성한 게시글 조회
         List<Post> posts = postRepository.findByWriterId(userId);
+
+        if (status != null && !status.isEmpty()) {
+            posts = posts.stream()
+                    .filter(post -> status.equalsIgnoreCase(post.getStatus().name()))
+                    .collect(Collectors.toList());
+        }
 
         return posts.stream().map(post -> {
             // 대표 이미지 가져오기
@@ -118,28 +162,28 @@ public class PostService {
                     .map(PostImage::getImageUrl)
                     .orElse(null);
 
-            Long reviewId = null;
             // postStatus가 "거래완료"인 경우 리뷰 조회
+            Long reviewId = null;
             if ("거래완료".equals(post.getStatus().name())) {
                 reviewId = reviewRepository.findByPostIdAndRevieweeId(post.getId(), userId)
                         .map(Review::getId)
                         .orElse(null);
             }
 
-            // 목록 데이터 구성
             PostPreviewResponseDto responseDto = new PostPreviewResponseDto();
             responseDto.setPostId(post.getId());
             responseDto.setTitle(post.getTitle());
             responseDto.setPrice(post.getPrice());
-            responseDto.setPreviewImage(previewImage); // 대표 이미지 설정
-            responseDto.setLocationName(post.getLocationName()); // 위치 정보
+            responseDto.setPreviewImage(previewImage);
+            responseDto.setLocationName(post.getLocationName());
             responseDto.setPostType(post.getType().name());
             responseDto.setPostStatus(post.getStatus().name());
             responseDto.setReviewId(reviewId);
             return responseDto;
-            
+
         }).collect(Collectors.toList());
     }
+
 
     public List<FilteredPostPreviewResponseDto> getFilteredPosts(String type, String category, String radius, String keyword, Long userId) {
         log.info("Filtering posts with type: {}, category: {}, radius: {}, keyword: {}, userId: {}", type, category, radius, keyword, userId);
@@ -166,13 +210,11 @@ public class PostService {
                     .orElse(null);
 
             FilteredPostPreviewResponseDto responseDto = new FilteredPostPreviewResponseDto();
-            responseDto.setPostStatus(post.getStatus().name());
             responseDto.setPostId(post.getId());
             responseDto.setTitle(post.getTitle());
             responseDto.setPrice(post.getPrice());
             responseDto.setPreviewImage(previewImage);
             responseDto.setLocationName(post.getLocationName());
-            responseDto.setPostType(post.getType().name());
             
             return responseDto;
         }).collect(Collectors.toList());

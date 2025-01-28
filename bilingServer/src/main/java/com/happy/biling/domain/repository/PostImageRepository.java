@@ -11,4 +11,5 @@ import java.util.Optional;
 public interface PostImageRepository extends JpaRepository<PostImage, Integer> {
     List<PostImage> findAllByPostOrderByOrderSequenceAsc(Post post);
     Optional<PostImage> findTopByPostOrderByOrderSequenceAsc(Post post); // order_sequence가 가장 작은 이미지 조회
+    List<PostImage> findByPost(Post post);
 }
