@@ -105,12 +105,17 @@ public class PostService {
         return responseDto;
     }
     
-    //특정 유저 게시글 조회
-    public List<PostPreviewResponseDto> getPostsByUserId(Long userId) {
-        log.info("Fetching posts for user: {}", userId);
+    // 특정 유저 게시글 조회
+    public List<PostPreviewResponseDto> getPostsByUserId(Long userId, String status) {
+        log.info("Fetching posts for user: {}, status: {}", userId, status);
 
-        // 유저가 작성한 게시글 조회
         List<Post> posts = postRepository.findByWriterId(userId);
+
+        if (status != null && !status.isEmpty()) {
+            posts = posts.stream()
+                    .filter(post -> status.equalsIgnoreCase(post.getStatus().name()))
+                    .collect(Collectors.toList());
+        }
 
         return posts.stream().map(post -> {
             // 대표 이미지 가져오기
@@ -118,28 +123,28 @@ public class PostService {
                     .map(PostImage::getImageUrl)
                     .orElse(null);
 
-            Long reviewId = null;
             // postStatus가 "거래완료"인 경우 리뷰 조회
+            Long reviewId = null;
             if ("거래완료".equals(post.getStatus().name())) {
                 reviewId = reviewRepository.findByPostIdAndRevieweeId(post.getId(), userId)
                         .map(Review::getId)
                         .orElse(null);
             }
 
-            // 목록 데이터 구성
             PostPreviewResponseDto responseDto = new PostPreviewResponseDto();
             responseDto.setPostId(post.getId());
             responseDto.setTitle(post.getTitle());
             responseDto.setPrice(post.getPrice());
-            responseDto.setPreviewImage(previewImage); // 대표 이미지 설정
-            responseDto.setLocationName(post.getLocationName()); // 위치 정보
+            responseDto.setPreviewImage(previewImage);
+            responseDto.setLocationName(post.getLocationName());
             responseDto.setPostType(post.getType().name());
             responseDto.setPostStatus(post.getStatus().name());
             responseDto.setReviewId(reviewId);
             return responseDto;
-            
+
         }).collect(Collectors.toList());
     }
+
 
     public List<FilteredPostPreviewResponseDto> getFilteredPosts(String type, String category, String radius, String keyword, Long userId) {
         log.info("Filtering posts with type: {}, category: {}, radius: {}, keyword: {}, userId: {}", type, category, radius, keyword, userId);
