@@ -85,12 +85,33 @@ public class PostController {
         try {
             String token = authHeader.substring(7); // "Bearer " 이후의 토큰 추출
             Long userId = Long.valueOf(jwtUtil.getUserIdFromToken(token));
-            log.info("Extracted User ID: {}", userId);
-
             postService.createPost(requestDto, userId);
             log.info("Post creation completed.");
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build(); // 성공
         } catch (Exception e) {
+            log.error("Error during post creation", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 실패
+        }
+    }
+    
+    // 게시글 재업로드
+    @PostMapping(value = "/posts/{id}/reupload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> reuploadPost(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable("id") Long postId,
+            @ModelAttribute PostWriteRequestDto requestDto) {
+        log.info("Entering reupload method. Authorization Header: {}, Request DTO: {}", authHeader, requestDto);
+
+        try {
+            String token = authHeader.substring(7); // "Bearer " 이후의 토큰 추출
+            Long userId = Long.valueOf(jwtUtil.getUserIdFromToken(token));
+            postService.reuploadPost(postId, requestDto, userId);
+            log.info("Post reupload completed.");
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build(); // 성공
+        } catch (IllegalStateException e) {
+            log.info("Duplicate post detected: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage()); // 수정 안 한 글
+        }  catch (Exception e) {
             log.error("Error during post creation", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 실패
         }

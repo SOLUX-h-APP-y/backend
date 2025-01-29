@@ -21,11 +21,13 @@ import lombok.RequiredArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @Service
@@ -75,6 +77,25 @@ public class PostService {
 
         return post;
     }
+    
+    @Transactional
+    public Post reuploadPost(Long postId, PostWriteRequestDto requestDto, Long userId) {
+        Post previousPost = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+
+        // 거래중 여부 확인
+        if ("거래중".equals(previousPost.getStatus().name())) {
+            boolean isSameContent = isSamePostContent(previousPost, requestDto);
+
+            if (isSameContent /*&& isSameImages*/) {
+                throw new IllegalStateException("It didn't modify");
+            }
+        }
+
+        return createPost(requestDto, userId);
+    }
+    
+
     
     public void deletePost(Long postId, Long userId) {
         Post post = postRepository.findById(postId)
@@ -219,6 +240,20 @@ public class PostService {
             
             return responseDto;
         }).collect(Collectors.toList());
+    }
+
+    
+    //post 관련 유틸성 함수 모음
+    private boolean isSamePostContent(Post previousPost, PostWriteRequestDto requestDto) {
+        return previousPost.getType().name().equals(requestDto.getType()) &&
+               previousPost.getTitle().equals(requestDto.getTitle()) &&
+               previousPost.getPrice().equals(requestDto.getPrice()) &&
+               previousPost.getContent().equals(requestDto.getContent()) &&
+               previousPost.getDistance().name().equals(requestDto.getDistance()) &&
+               previousPost.getCategory().name().equals(requestDto.getCategory()) &&
+               previousPost.getLocationName().equals(requestDto.getLocationName()) &&
+               previousPost.getLocationLatitude().equals(requestDto.getLocationLatitude()) &&
+               previousPost.getLocationLongitude().equals(requestDto.getLocationLongitude());
     }
 
     private boolean isValidCategory(Category postCategory, String requestedCategory) {
