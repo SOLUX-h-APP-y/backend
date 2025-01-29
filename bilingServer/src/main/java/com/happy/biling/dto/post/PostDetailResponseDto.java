@@ -13,6 +13,7 @@ public class PostDetailResponseDto {
 	private Long writerId;
 	private String writerProfileImage;
 	private String writerNickname;
+	private String postStatus;
     private String distance;
     private String category;
     private String title;

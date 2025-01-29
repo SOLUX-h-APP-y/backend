@@ -131,6 +131,7 @@ public class PostService {
         responseDto.setWriterProfileImage(profileImage);
         responseDto.setWriterNickname(post.getWriter().getNickname());
         responseDto.setDistance(post.getDistance().name());
+        responseDto.setPostStatus(post.getStatus().name());
         responseDto.setCategory(post.getCategory().name());
         responseDto.setTitle(post.getTitle());
         responseDto.setCreateAt(post.getCreateAt());
