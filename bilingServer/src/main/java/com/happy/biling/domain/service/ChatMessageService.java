@@ -1,6 +1,7 @@
 package com.happy.biling.domain.service;
 
 import com.happy.biling.domain.entity.*;
+import com.happy.biling.domain.entity.enums.PostStatus;
 import com.happy.biling.domain.repository.*;
 import com.happy.biling.dto.chat.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,11 +76,14 @@ public class ChatMessageService {
 
         List<ChatMessage> messages = chatMessageRepository.findByChatRoomOrderByCreateAtAsc(chatRoom);
 
+        PostStatus postStatus = post.getStatus();
+
         return new ChatRoomDetailResponse(
                 chatRoom.getId(),
                 post.getTitle(),
                 post.getLocationName(),
                 postImageUrl,
+                postStatus,
                 otherUser.getProfileImage(),
                 messages.stream().map(message -> new MessageResponse(
                         message.getSender().getNickname(),

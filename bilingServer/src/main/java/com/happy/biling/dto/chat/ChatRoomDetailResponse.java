@@ -1,5 +1,6 @@
 package com.happy.biling.dto.chat;
 
+import com.happy.biling.domain.entity.enums.PostStatus;
 import java.util.List;
 
 public class ChatRoomDetailResponse {
@@ -7,14 +8,16 @@ public class ChatRoomDetailResponse {
     private String postTitle;
     private String postLocation;
     private String postImage;
+    private PostStatus postStatus;
     private String otherUserProfileImage;
     private List<MessageResponse> messages;
 
-    public ChatRoomDetailResponse(Long chatRoomId, String postTitle, String postLocation, String postImage, String otherUserProfileImage, List<MessageResponse> messages) {
+    public ChatRoomDetailResponse(Long chatRoomId, String postTitle, String postLocation, String postImage, PostStatus postStatus, String otherUserProfileImage, List<MessageResponse> messages) {
         this.chatRoomId = chatRoomId;
         this.postTitle = postTitle;
         this.postLocation = postLocation;
         this.postImage = postImage;
+        this.postStatus = postStatus;
         this.otherUserProfileImage = otherUserProfileImage;
         this.messages = messages;
     }
@@ -49,6 +52,14 @@ public class ChatRoomDetailResponse {
 
     public void setPostImage(String postImage) {
         this.postImage = postImage;
+    }
+
+    public PostStatus getPostStatus() {
+        return postStatus;
+    }
+
+    public void setPostStatus(PostStatus postStatus) {
+        this.postStatus = postStatus;
     }
 
     public String getOtherUserProfileImage() {
