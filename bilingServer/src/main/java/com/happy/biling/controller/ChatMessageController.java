@@ -23,9 +23,10 @@ public class ChatMessageController {
         chatMessageService.sendMessage(request);
         return ResponseEntity.ok("Message sent successfully");
     }
-
+    
     @GetMapping("/rooms")
-    public ResponseEntity<List<ChatRoomResponse>> getChatRooms(@RequestParam Long userId) {
+    public ResponseEntity<List<ChatRoomResponse>> getChatRooms(
+    		@RequestParam(value = "userId") Long userId) {
         List<ChatRoomResponse> chatRooms = chatMessageService.getChatRooms(userId);
         return ResponseEntity.ok(chatRooms);
     }
