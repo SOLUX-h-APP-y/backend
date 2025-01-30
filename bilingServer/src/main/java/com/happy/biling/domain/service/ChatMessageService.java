@@ -44,6 +44,10 @@ public class ChatMessageService {
             User otherUser = chatRoom.getOwner().equals(user) ? chatRoom.getRenter() : chatRoom.getOwner();
             ChatMessage lastMessage = chatMessageRepository.findTopByChatRoomOrderByCreateAtDesc(chatRoom).orElse(null);
 
+            UserMessageReadStatus readStatus = userMessageReadStatusRepository.findByUserAndChatRoom(user, chatRoom)
+                    .orElse(new UserMessageReadStatus());
+            int unreadCount = readStatus.getUnreadChatCount();
+
             if (lastMessage != null) {
                 chatRoom.setLastMessageContent(lastMessage.getContent());
                 chatRoom.setLastMessageTime(lastMessage.getCreateAt());
@@ -56,7 +60,7 @@ public class ChatMessageService {
                     otherUser.getProfileImage(),
                     chatRoom.getPost().getTitle(),
                     lastMessage != null ? lastMessage.getContent() : "No messages",
-                    chatRoom.getUnreadCount(),
+                    unreadCount,
                     lastMessage != null ? lastMessage.getCreateAt() : LocalDateTime.now()
             );
         }).collect(Collectors.toList());
@@ -106,14 +110,17 @@ public class ChatMessageService {
         User renter = userRepository.findById(request.getRenterId())
                 .orElseThrow(() -> new RuntimeException("Renter not found"));
 
-        ChatRoom chatRoom = chatRoomRepository.findById(request.getChatRoomId())
-                .orElseGet(() -> {
-                    ChatRoom newChatRoom = new ChatRoom();
-                    newChatRoom.setPost(post);
-                    newChatRoom.setOwner(owner);
-                    newChatRoom.setRenter(renter);
-                    return chatRoomRepository.save(newChatRoom);
-                });
+        ChatRoom chatRoom;
+        if (request.getChatRoomId() != null) {
+            chatRoom = chatRoomRepository.findById(request.getChatRoomId())
+                    .orElseThrow(() -> new RuntimeException("Chat room not found"));
+        } else {
+            chatRoom = new ChatRoom();
+            chatRoom.setPost(post);
+            chatRoom.setOwner(owner);
+            chatRoom.setRenter(renter);
+            chatRoom = chatRoomRepository.save(chatRoom);
+        }
 
         ChatMessage chatMessage = new ChatMessage();
         chatMessage.setChatRoom(chatRoom);
@@ -123,11 +130,12 @@ public class ChatMessageService {
         chatMessageRepository.save(chatMessage);
 
         User receiver = owner.equals(chatMessage.getSender()) ? renter : owner;
+        ChatRoom finalChatRoom = chatRoom;
         UserMessageReadStatus readStatus = userMessageReadStatusRepository.findByUserAndChatRoom(receiver, chatRoom)
                 .orElseGet(() -> {
                     UserMessageReadStatus newStatus = new UserMessageReadStatus();
                     newStatus.setUser(receiver);
-                    newStatus.setChatRoom(chatRoom);
+                    newStatus.setChatRoom(finalChatRoom);
                     newStatus.setUnreadChatCount(0);
                     return newStatus;
                 });
