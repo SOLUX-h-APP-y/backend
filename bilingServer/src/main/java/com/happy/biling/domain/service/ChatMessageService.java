@@ -97,6 +97,7 @@ public class ChatMessageService {
                 otherUser.getProfileImage(),
                 messages.stream().map(message -> new MessageResponse(
                         message.getSender().getNickname(),
+                        message.getSender().getId(),
                         message.getContent(),
                         message.getCreateAt()
                 )).collect(Collectors.toList())
