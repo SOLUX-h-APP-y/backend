@@ -14,6 +14,7 @@ import com.happy.biling.dto.chat.ChatRoomResponse;
 import com.happy.biling.dto.chat.ChatRoomDetailResponse;
 import com.happy.biling.dto.chat.MessageResponse;
 import com.happy.biling.dto.chat.SendMessageRequest;
+import com.happy.biling.dto.chat.SendMessageResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,46 +40,6 @@ public class ChatMessageService {
 
     @Autowired
     private PostImageRepository postImageRepository;
-
-    @Transactional
-    public void sendMessage(SendMessageRequest request) {
-        Post post = postRepository.findById(request.getPostId())
-                .orElseThrow(() -> new RuntimeException("Post not found"));
-
-        if (request.getOwnerId() == null || request.getRenterId() == null) {
-            throw new IllegalArgumentException("Owner ID and Renter ID must not be null");
-        }
-
-        User owner = userRepository.findById(request.getOwnerId())
-                .orElseThrow(() -> new RuntimeException("Owner not found"));
-
-        User renter = userRepository.findById(request.getRenterId())
-                .orElseThrow(() -> new RuntimeException("Renter not found"));
-
-        ChatRoom chatRoom;
-
-        if (request.getChatRoomId() != null) {
-            chatRoom = chatRoomRepository.findById(request.getChatRoomId())
-                    .orElseThrow(() -> new RuntimeException("Chat room not found"));
-        } else {
-            chatRoom = chatRoomRepository.findByPostAndOwnerAndRenter(post, owner, renter);
-            if (chatRoom == null) {
-                chatRoom = new ChatRoom();
-                chatRoom.setPost(post);
-                chatRoom.setOwner(owner);
-                chatRoom.setRenter(renter);
-                chatRoom = chatRoomRepository.save(chatRoom);
-            }
-        }
-
-        ChatMessage chatMessage = new ChatMessage();
-        chatMessage.setChatRoom(chatRoom);
-        chatMessage.setSender(owner);
-        chatMessage.setContent(request.getContent());
-        chatMessage.setIsRead(false);
-
-        chatMessageRepository.save(chatMessage);
-    }
 
     @Transactional
     public List<ChatRoomResponse> getChatRooms(Long userId) {
@@ -140,5 +101,47 @@ public class ChatMessageService {
                         message.getCreateAt()
                 )).collect(Collectors.toList())
         );
+    }
+
+    @Transactional
+    public SendMessageResponse sendMessage(SendMessageRequest request) {
+        Post post = postRepository.findById(request.getPostId())
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+
+        if (request.getOwnerId() == null || request.getRenterId() == null) {
+            throw new IllegalArgumentException("Owner ID and Renter ID must not be null");
+        }
+
+        User owner = userRepository.findById(request.getOwnerId())
+                .orElseThrow(() -> new RuntimeException("Owner not found"));
+
+        User renter = userRepository.findById(request.getRenterId())
+                .orElseThrow(() -> new RuntimeException("Renter not found"));
+
+        ChatRoom chatRoom;
+
+        if (request.getChatRoomId() != null) {
+            chatRoom = chatRoomRepository.findById(request.getChatRoomId())
+                    .orElseThrow(() -> new RuntimeException("Chat room not found"));
+        } else {
+            chatRoom = chatRoomRepository.findByPostAndOwnerAndRenter(post, owner, renter);
+            if (chatRoom == null) {
+                chatRoom = new ChatRoom();
+                chatRoom.setPost(post);
+                chatRoom.setOwner(owner);
+                chatRoom.setRenter(renter);
+                chatRoom = chatRoomRepository.save(chatRoom);
+            }
+        }
+
+        ChatMessage chatMessage = new ChatMessage();
+        chatMessage.setChatRoom(chatRoom);
+        chatMessage.setSender(owner);
+        chatMessage.setContent(request.getContent());
+        chatMessage.setIsRead(false);
+
+        chatMessageRepository.save(chatMessage);
+
+        return new SendMessageResponse(chatRoom.getId(), "Message sent successfully");
     }
 }
