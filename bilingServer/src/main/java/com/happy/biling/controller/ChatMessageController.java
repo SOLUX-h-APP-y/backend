@@ -1,6 +1,7 @@
 package com.happy.biling.controller;
 
 import com.happy.biling.dto.chat.SendMessageRequest;
+import com.happy.biling.dto.chat.SendMessageResponse;
 import com.happy.biling.dto.chat.ChatRoomResponse;
 import com.happy.biling.domain.service.ChatMessageService;
 import org.springframework.http.ResponseEntity;
@@ -19,14 +20,14 @@ public class ChatMessageController {
     }
 
     @PostMapping("/send")
-    public ResponseEntity<String> sendMessage(@RequestBody SendMessageRequest request) {
-        chatMessageService.sendMessage(request);
-        return ResponseEntity.ok("Message sent successfully");
+    public ResponseEntity<SendMessageResponse> sendMessage(@RequestBody SendMessageRequest request) {
+        SendMessageResponse response = chatMessageService.sendMessage(request);
+        return ResponseEntity.ok(response);
     }
-    
+
     @GetMapping("/rooms")
     public ResponseEntity<List<ChatRoomResponse>> getChatRooms(
-    		@RequestParam(value = "userId") Long userId) {
+            @RequestParam(value = "userId") Long userId) {
         List<ChatRoomResponse> chatRooms = chatMessageService.getChatRooms(userId);
         return ResponseEntity.ok(chatRooms);
     }
