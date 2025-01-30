@@ -2,68 +2,27 @@ package com.happy.biling.dto.chat;
 
 import java.time.LocalDateTime;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class ChatRoomResponse {
     private Long chatRoomId;
+    private Long postId;
     private String profileImage;
     private String postTitle;
     private String lastMessageContent;
     private long unreadCount;
     private LocalDateTime lastMessageTimestamp;
 
-    public ChatRoomResponse(Long chatRoomId, String profileImage, String postTitle, String lastMessageContent, long unreadCount, LocalDateTime lastMessageTimestamp) {
+    public ChatRoomResponse(Long chatRoomId, Long postId, String profileImage, String postTitle, String lastMessageContent, long unreadCount, LocalDateTime lastMessageTimestamp) {
         this.chatRoomId = chatRoomId;
+        this.postId = postId;
         this.profileImage = profileImage;
         this.postTitle = postTitle;
         this.lastMessageContent = lastMessageContent;
         this.unreadCount = unreadCount;
-        this.lastMessageTimestamp = lastMessageTimestamp;
-    }
-
-    public Long getChatRoomId() {
-        return chatRoomId;
-    }
-
-    public void setChatRoomId(Long chatRoomId) {
-        this.chatRoomId = chatRoomId;
-    }
-
-    public String getProfileImage() {
-        return profileImage;
-    }
-
-    public void setProfileImage(String profileImage) {
-        this.profileImage = profileImage;
-    }
-
-    public String getPostTitle() {
-        return postTitle;
-    }
-
-    public void setPostTitle(String postTitle) {
-        this.postTitle = postTitle;
-    }
-
-    public String getLastMessageContent() {
-        return lastMessageContent;
-    }
-
-    public void setLastMessageContent(String lastMessageContent) {
-        this.lastMessageContent = lastMessageContent;
-    }
-
-    public long getUnreadCount() {
-        return unreadCount;
-    }
-
-    public void setUnreadCount(long unreadCount) {
-        this.unreadCount = unreadCount;
-    }
-
-    public LocalDateTime getLastMessageTimestamp() {
-        return lastMessageTimestamp;
-    }
-
-    public void setLastMessageTimestamp(LocalDateTime lastMessageTimestamp) {
         this.lastMessageTimestamp = lastMessageTimestamp;
     }
 }

@@ -101,6 +101,7 @@ public class ChatMessageService {
 
             return new ChatRoomResponse(
                     chatRoom.getId(),
+                    chatRoom.getPost().getId(),
                     otherUser.getProfileImage(),
                     chatRoom.getPost().getTitle(),
                     lastMessage != null ? lastMessage.getContent() : "No messages",

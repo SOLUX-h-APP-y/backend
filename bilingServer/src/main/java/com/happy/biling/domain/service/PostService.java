@@ -12,6 +12,7 @@ import com.happy.biling.domain.repository.PostImageRepository;
 import com.happy.biling.domain.repository.PostRepository;
 import com.happy.biling.domain.repository.ReviewRepository;
 import com.happy.biling.domain.repository.UserRepository;
+import com.happy.biling.dto.chat.ChatroomPostResponseDto;
 import com.happy.biling.dto.post.FilteredPostPreviewResponseDto;
 import com.happy.biling.dto.post.PostDetailResponseDto;
 import com.happy.biling.dto.post.PostPreviewResponseDto;
@@ -86,6 +87,7 @@ public class PostService {
         // 거래중 여부 확인
         if ("거래중".equals(previousPost.getStatus().name())) {
             boolean isSameContent = isSamePostContent(previousPost, requestDto);
+            //boolean isSameImages = isSamePostImages(previousPost, requestDto.getImages());
 
             if (isSameContent /*&& isSameImages*/) {
                 throw new IllegalStateException("It didn't modify");
@@ -164,6 +166,34 @@ public class PostService {
         responseDto.setImageUrls(imageUrls);
 
         return responseDto;
+    }
+
+    // 채팅방 상단 게시글 정보 조회
+    public ChatroomPostResponseDto getChatroomPost(Long postId, Long userId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+
+        // 대표 이미지 가져오기
+        String previewImage = postImageRepository.findTopByPostOrderByOrderSequenceAsc(post)
+                .map(PostImage::getImageUrl)
+                .orElse(null);
+
+        // postStatus가 "거래완료"인 경우 리뷰 조회
+        Long reviewId = null;
+        if ("거래완료".equals(post.getStatus().name())) {
+            reviewId = reviewRepository.findByPostIdAndRevieweeId(post.getId(), userId)
+                    .map(Review::getId)
+                    .orElse(null);
+        }
+
+        return new ChatroomPostResponseDto(
+                post.getStatus().name(),
+                post.getId(),
+                post.getTitle(),
+                previewImage,
+                post.getLocationName(),
+                reviewId
+        );
     }
     
     // 특정 유저 게시글 조회
@@ -256,6 +286,32 @@ public class PostService {
                previousPost.getLocationLongitude().equals(requestDto.getLocationLongitude());
     }
 
+    /*
+    private boolean isSamePostImages(Post previousPost, List<MultipartFile> newImages) {
+        List<PostImage> existingImages = postImageRepository.findByPost(previousPost);
+
+        // 기존 이미지와 새 이미지를 비교
+        if (existingImages.size() != newImages.size()) {
+            return false; // 이미지 개수가 다르면 변경된 것
+        }
+
+        // 기존 이미지 URL들을 Set으로 가져옴
+        Set<String> existingImageUrls = existingImages.stream()
+                .map(PostImage::getImageUrl)
+                .collect(Collectors.toSet());
+
+        // 새 이미지의 URL을 얻기 위한 URL 처리
+        List<String> newImageUrls = newImages.stream()
+                .map(image -> s3Uploader.getFileUrl(image, "posts/" + previousPost.getId())) // S3에서 이미지 URL을 얻기
+                .collect(Collectors.toList());
+
+        // 기존 이미지 URL들과 새 이미지 URL들이 모두 동일한지 비교
+        return existingImageUrls.containsAll(newImageUrls);
+    }
+    */
+
+
+    
     private boolean isValidCategory(Category postCategory, String requestedCategory) {
         return requestedCategory == null || requestedCategory.equalsIgnoreCase("전체") || postCategory.name().equalsIgnoreCase(requestedCategory);
     }
