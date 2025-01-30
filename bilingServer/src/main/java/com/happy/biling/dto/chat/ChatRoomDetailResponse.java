@@ -5,6 +5,7 @@ import java.util.List;
 
 public class ChatRoomDetailResponse {
     private Long chatRoomId;
+    private Long writerId;
     private String postTitle;
     private String postLocation;
     private String postImage;
@@ -12,8 +13,9 @@ public class ChatRoomDetailResponse {
     private String otherUserProfileImage;
     private List<MessageResponse> messages;
 
-    public ChatRoomDetailResponse(Long chatRoomId, String postTitle, String postLocation, String postImage, PostStatus postStatus, String otherUserProfileImage, List<MessageResponse> messages) {
+    public ChatRoomDetailResponse(Long chatRoomId, Long writerId, String postTitle, String postLocation, String postImage, PostStatus postStatus, String otherUserProfileImage, List<MessageResponse> messages) {
         this.chatRoomId = chatRoomId;
+        this.writerId = writerId;
         this.postTitle = postTitle;
         this.postLocation = postLocation;
         this.postImage = postImage;
@@ -28,6 +30,14 @@ public class ChatRoomDetailResponse {
 
     public void setChatRoomId(Long chatRoomId) {
         this.chatRoomId = chatRoomId;
+    }
+
+    public Long getWriterId() {
+        return writerId;
+    }
+
+    public void setWriterId(Long writerId) {
+        this.writerId = writerId;
     }
 
     public String getPostTitle() {

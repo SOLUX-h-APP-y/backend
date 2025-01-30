@@ -80,10 +80,11 @@ public class ChatMessageService {
 
         return new ChatRoomDetailResponse(
                 chatRoom.getId(),
+                post.getWriter().getId(),
                 post.getTitle(),
                 post.getLocationName(),
                 postImageUrl,
-                postStatus,
+                post.getStatus(),
                 otherUser.getProfileImage(),
                 messages.stream().map(message -> new MessageResponse(
                         message.getSender().getNickname(),
