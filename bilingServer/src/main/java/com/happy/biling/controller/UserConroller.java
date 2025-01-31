@@ -26,8 +26,8 @@ public class UserConroller {
     private final PostService postService;
     private final JwtUtil jwtUtil;
     
-    @GetMapping("/auth/check-nickname")
-    public ResponseEntity<Map<String, Boolean>> createPost(@RequestBody NicknameCheckRequestDto requestDto) {
+    @PostMapping("/auth/check-nickname")
+    public ResponseEntity<Map<String, Boolean>> checkNickname(@RequestBody NicknameCheckRequestDto requestDto) {
         try {
         	boolean isDuplicate = userService.checkNickname(requestDto);
         	
