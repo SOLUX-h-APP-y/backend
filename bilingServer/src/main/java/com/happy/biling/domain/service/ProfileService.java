@@ -195,6 +195,8 @@ public class ProfileService {
     private final CheerRepository cheerRepository;
     private final S3Uploader s3Uploader;
 
+    private static final String DEFAULT_PROFILE_IMAGE = "https://biling-img11-bucket.s3.ap-northeast-2.amazonaws.com/profile/Group+849.jpg";
+
     @Getter
     @AllArgsConstructor
     private static class TierInfo {
@@ -207,32 +209,29 @@ public class ProfileService {
     public ProfileResponseDto getProfile(ProfileRequestDto requestDto) {
         User user = userRepository.findById(requestDto.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        // 실제 거래 완료 횟수 조회
-        int baseRentalCount = user.getRentalCount();
 
-        // 총 응원 횟수 조회
-        long totalCheers = cheerRepository.countByReceiverId(user.getId());
+        String profileImage = user.getProfileImage();
+        if (profileImage == null || profileImage.isEmpty()) {
+            profileImage = DEFAULT_PROFILE_IMAGE;
+        }
 
-        // 응원으로 인한 추가 카운트 (30개당 1회 추가)
-        int additionalCount = (int) (totalCheers / 30);
-
-        // 최종 대여 횟수 = 기존 rentalCount + 응원으로 인한 추가 횟수
-        int totalRentalCount = baseRentalCount + additionalCount;
-
-        // 티어 정보 계산
-        TierInfo tierInfo = calculateTierInfo(totalRentalCount);
+        int baseRentalCount = user.getRentalCount(); // 실제 거래 완료 횟수 조회
+        long totalCheers = cheerRepository.countByReceiverId(user.getId()); // 총 응원 횟수 조회
+        int additionalCount = (int) (totalCheers / 30); // 응원으로 인한 추가 카운트 (30개당 1회 추가)
+        int totalRentalCount = baseRentalCount + additionalCount; // 최종 대여 횟수 = 기존 rentalCount + 응원으로 인한 추가 횟수
+        TierInfo tierInfo = calculateTierInfo(totalRentalCount); // 티어 정보 계산
 
         return ProfileResponseDto.builder()
                 .userId(user.getId())
                 .nickname(user.getNickname())
-                .profileImage(user.getProfileImage())
+                .profileImage(profileImage)
                 .bio(user.getBio())
                 .tier(tierInfo.getCurrentTier())
                 .nextTier(tierInfo.getNextTier())
                 .remainingCountToNextTier(tierInfo.getRemainingCount())
                 .locationName(user.getLocationName())
                 .rentalCount(totalRentalCount)
-                .cheerCount(totalCheers) // 총 응원 수 포함
+                .cheerCount(totalCheers)
                 .allowNotification(user.getAllowNotification())
                 .build();
     }
@@ -242,7 +241,6 @@ public class ProfileService {
     public ProfileResponseDto updateProfile(Long userId, ProfileUpdateRequestDto requestDto, MultipartFile profileImageFile) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-
         // 닉네임 수정
         if (requestDto.hasNickname()) {
             if (!user.getNickname().equals(requestDto.getNickname())
@@ -251,18 +249,19 @@ public class ProfileService {
             }
             user.setNickname(requestDto.getNickname());
         }
-
         // 프로필 이미지 삭제 후 업로드
+        String profileImage = user.getProfileImage();
         if (profileImageFile != null && !profileImageFile.isEmpty()) {
             log.info("Uploading new profile image...");
-            // 기존 이미지 삭제
-            if (user.getProfileImage() != null) {
-                s3Uploader.deleteFile(user.getProfileImage());
+            if (profileImage != null) {
+                s3Uploader.deleteFile(profileImage);
             }
+            profileImage = s3Uploader.uploadFile(profileImageFile, "profile");
+            user.setProfileImage(profileImage);
+        }
 
-            // 새 이미지 업로드 (profile 폴더 지정)
-            String uploadedImageUrl = s3Uploader.uploadFile(profileImageFile, "profile");
-            user.setProfileImage(uploadedImageUrl);
+        if (profileImage == null || profileImage.isEmpty()) {
+            profileImage = DEFAULT_PROFILE_IMAGE;
         }
 
         // 자기소개 수정
@@ -273,13 +272,12 @@ public class ProfileService {
         long totalCheers = cheerRepository.countByReceiverId(userId);
         int additionalCount = (int) (totalCheers / 30);
         int totalRentalCount = user.getRentalCount() + additionalCount;
-
         TierInfo tierInfo = calculateTierInfo(totalRentalCount);
 
         return ProfileResponseDto.builder()
                 .userId(user.getId())
                 .nickname(user.getNickname())
-                .profileImage(user.getProfileImage())
+                .profileImage(profileImage)
                 .bio(user.getBio())
                 .tier(tierInfo.getCurrentTier())
                 .nextTier(tierInfo.getNextTier())
