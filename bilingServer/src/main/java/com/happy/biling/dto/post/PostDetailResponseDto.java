@@ -14,6 +14,7 @@ public class PostDetailResponseDto {
 	private String writerProfileImage;
 	private String writerNickname;
 	private String postStatus;
+	private String postType;
     private String distance;
     private String category;
     private String title;
