@@ -248,7 +248,7 @@ public class PostService {
         Double userLongitude = user.getLocationLongitude();
 
         // 조건에 따라 게시글 필터링
-        List<Post> filteredPosts = postRepository.findAllByOrderByCreatedAtDesc().stream()
+        List<Post> filteredPosts = postRepository.findAllByOrderByCreateAtDesc().stream()
                 .filter(post -> post.getType().name().equalsIgnoreCase(type)) // type 필터
                 .filter(post -> isValidCategory(post.getCategory(), category)) // category 필터
                 .filter(post -> isWithinRadius(post.getLocationLatitude(), post.getLocationLongitude(), userLatitude, userLongitude, radius)) // 거리 필터
