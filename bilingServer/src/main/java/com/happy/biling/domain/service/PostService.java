@@ -248,12 +248,13 @@ public class PostService {
         Double userLongitude = user.getLocationLongitude();
 
         // 조건에 따라 게시글 필터링
-        List<Post> filteredPosts = postRepository.findAll().stream()
+        List<Post> filteredPosts = postRepository.findAllByOrderByCreatedAtDesc().stream()
                 .filter(post -> post.getType().name().equalsIgnoreCase(type)) // type 필터
                 .filter(post -> isValidCategory(post.getCategory(), category)) // category 필터
                 .filter(post -> isWithinRadius(post.getLocationLatitude(), post.getLocationLongitude(), userLatitude, userLongitude, radius)) // 거리 필터
                 .filter(post -> isValidKeyword(post.getTitle(), keyword)) // keyword 필터
                 .filter(post -> post.getExpirationDate().isAfter(LocalDateTime.now())) // 유효한 게시글
+                .filter(post -> post.getStatus().name().equals("거래중")) // 거래중인 게시글만
                 .collect(Collectors.toList());
 
         // 게시글 목록을 DTO로 변환

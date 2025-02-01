@@ -1,6 +1,8 @@
 package com.happy.biling.domain.repository;
 
 import com.happy.biling.domain.entity.Post;
+import com.happy.biling.domain.entity.User;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;
@@ -12,4 +14,4 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findByWriterId(Long writerId);
     List<Post> findByType(String type);
     List<Post> findByStatus(String status);
-}
+    List<Post> findAllByOrderByCreatedAtDesc();}
