@@ -186,24 +186,15 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
-@Slf4j
 public class ProfileService {
+    private final UserService userService;
     private final UserRepository userRepository;
     private final CheerRepository cheerRepository;
     private final S3Uploader s3Uploader;
-
     private static final String DEFAULT_PROFILE_IMAGE = "https://biling-img11-bucket.s3.ap-northeast-2.amazonaws.com/profile/Group+849.jpg";
-
-    @Getter
-    @AllArgsConstructor
-    private static class TierInfo {
-        private final Tier currentTier;
-        private final Tier nextTier;
-        private final int remainingCount;
-    }
 
     // 프로필 조회
     public ProfileResponseDto getProfile(ProfileRequestDto requestDto) {
@@ -215,11 +206,9 @@ public class ProfileService {
             profileImage = DEFAULT_PROFILE_IMAGE;
         }
 
-        int baseRentalCount = user.getRentalCount(); // 실제 거래 완료 횟수 조회
-        long totalCheers = cheerRepository.countByReceiverId(user.getId()); // 총 응원 횟수 조회
-        int additionalCount = (int) (totalCheers / 30); // 응원으로 인한 추가 카운트 (30개당 1회 추가)
-        int totalRentalCount = baseRentalCount + additionalCount; // 최종 대여 횟수 = 기존 rentalCount + 응원으로 인한 추가 횟수
-        TierInfo tierInfo = calculateTierInfo(totalRentalCount); // 티어 정보 계산
+        UserService.TierInfo tierInfo = userService.calculateUserTierInfo(user.getId());
+        int totalRentalCount = userService.calculateTotalRentalCount(user.getId());
+        long totalCheers = cheerRepository.countByReceiverId(user.getId());
 
         return ProfileResponseDto.builder()
                 .userId(user.getId())
@@ -241,6 +230,7 @@ public class ProfileService {
     public ProfileResponseDto updateProfile(Long userId, ProfileUpdateRequestDto requestDto, MultipartFile profileImageFile) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
         // 닉네임 수정
         if (requestDto.hasNickname()) {
             if (!user.getNickname().equals(requestDto.getNickname())
@@ -249,6 +239,7 @@ public class ProfileService {
             }
             user.setNickname(requestDto.getNickname());
         }
+
         // 프로필 이미지 삭제 후 업로드
         String profileImage = user.getProfileImage();
         if (profileImageFile != null && !profileImageFile.isEmpty()) {
@@ -269,10 +260,9 @@ public class ProfileService {
             user.setBio(requestDto.getBio());
         }
 
+        UserService.TierInfo tierInfo = userService.calculateUserTierInfo(userId);
+        int totalRentalCount = userService.calculateTotalRentalCount(userId);
         long totalCheers = cheerRepository.countByReceiverId(userId);
-        int additionalCount = (int) (totalCheers / 30);
-        int totalRentalCount = user.getRentalCount() + additionalCount;
-        TierInfo tierInfo = calculateTierInfo(totalRentalCount);
 
         return ProfileResponseDto.builder()
                 .userId(user.getId())
@@ -289,7 +279,6 @@ public class ProfileService {
                 .build();
     }
 
-
     // 응원 추가
     @Transactional
     public CheerResponseDto addCheer(CheerRequestDto requestDto) {
@@ -303,6 +292,7 @@ public class ProfileService {
         if (requestDto.getSenderId().equals(requestDto.getReceiverId())) {
             throw new RuntimeException("자기 자신은 응원할 수 없습니다.");
         }
+
         // 현재 수신자의 총 응원 수 조회
         long currentTotalCheers = cheerRepository.countByReceiverId(requestDto.getReceiverId());
 
@@ -310,28 +300,12 @@ public class ProfileService {
         Cheer cheer = new Cheer();
         cheer.setSenderId(requestDto.getSenderId());
         cheer.setReceiverId(requestDto.getReceiverId());
-        cheer.setTotalCheers((int) (currentTotalCheers + 1)); // 총 응원 수 업데이트
+        cheer.setTotalCheers((int) (currentTotalCheers + 1));
         cheerRepository.save(cheer);
 
-        return new CheerResponseDto(currentTotalCheers + 1);
-    }
+        // 응원 추가 후 tier 업데이트
+        userService.updateUserTier(requestDto.getReceiverId());
 
-    private TierInfo calculateTierInfo(int totalCount) {
-        if (totalCount >= 100) {
-            return new TierInfo(Tier.지구, null, 0);
-        }
-        if (totalCount >= 80) {
-            return new TierInfo(Tier.숲, Tier.지구, 100 - totalCount);
-        }
-        if (totalCount >= 60) {
-            return new TierInfo(Tier.나무, Tier.숲, 80 - totalCount);
-        }
-        if (totalCount >= 30) {
-            return new TierInfo(Tier.풀, Tier.나무, 60 - totalCount);
-        }
-        if (totalCount >= 10) {
-            return new TierInfo(Tier.새싹, Tier.풀, 30 - totalCount);
-        }
-        return new TierInfo(Tier.씨앗, Tier.새싹, 10 - totalCount);
+        return new CheerResponseDto(currentTotalCheers + 1);
     }
 }
