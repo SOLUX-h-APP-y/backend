@@ -40,13 +40,14 @@ public class PostService {
     private final UserRepository userRepository;
     private final ReviewRepository reviewRepository;
     private final S3Uploader s3Uploader;
+    private final UserService userService;
 
     // 게시글 생성
     @Transactional
     public Post createPost(PostWriteRequestDto requestDto, Long userId) {
         User writer = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        
+
         Post post = new Post();
 
         post.setWriter(writer);
@@ -78,7 +79,7 @@ public class PostService {
 
         return post;
     }
-    
+
     @Transactional
     public Post reuploadPost(Long postId, PostWriteRequestDto requestDto, Long userId) {
         Post previousPost = postRepository.findById(postId)
@@ -96,13 +97,12 @@ public class PostService {
 
         return createPost(requestDto, userId);
     }
-    
 
-    
+
     public void deletePost(Long postId, Long userId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
-        
+
         if (!post.getWriter().getId().equals(userId)) {
             throw new IllegalArgumentException("You are not the writer of this post");
         }
@@ -112,7 +112,7 @@ public class PostService {
         }
 
         //TODO 포스트와 연관된 채팅이 있을 때도 삭제하면 안되나? 거래완료를 못 지우게 하면 리뷰 같은 건 자동적으로 고려하긴 함
-        
+
         // postImage 삭제
         List<PostImage> postImages = postImageRepository.findByPost(post);
         if (!postImages.isEmpty()) {
@@ -122,21 +122,40 @@ public class PostService {
         // 게시글 삭제
         postRepository.delete(post);
     }
-    
+
+    //    public void updatePostStatus(Long postId, Long userId, String status) {
+//        Post post = postRepository.findById(postId)
+//                .orElseThrow(() -> new RuntimeException("Post not found"));
+//
+//        if (!post.getWriter().getId().equals(userId)) {
+//            throw new IllegalArgumentException("You are not the writer of this post");
+//        }
+//
+//        PostStatus newStatus = PostStatus.valueOf(status);
+//        post.setStatus(newStatus);;
+//
+//        postRepository.save(post);
+//    }
+    @Transactional
     public void updatePostStatus(Long postId, Long userId, String status) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
-        
+
         if (!post.getWriter().getId().equals(userId)) {
             throw new IllegalArgumentException("You are not the writer of this post");
         }
-        
+
         PostStatus newStatus = PostStatus.valueOf(status);
-        post.setStatus(newStatus);;
-        
+
+        // 거래완료로 상태가 변경될 때만 rental_count 증가
+        if (newStatus == PostStatus.거래완료) {
+            userService.recalculateRentalCount(userId);
+        }
+
+        post.setStatus(newStatus);
         postRepository.save(post);
     }
-    
+
     public PostDetailResponseDto getPostDetail(Long postId, Long userId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
@@ -196,7 +215,7 @@ public class PostService {
                 reviewId
         );
     }
-    
+
     // 특정 유저 게시글 조회
     public List<PostPreviewResponseDto> getPostsByUserId(Long userId, String status) {
         log.info("Fetching posts for user: {}, status: {}", userId, status);
@@ -269,23 +288,23 @@ public class PostService {
             responseDto.setPrice(post.getPrice());
             responseDto.setPreviewImage(previewImage);
             responseDto.setLocationName(post.getLocationName());
-            
+
             return responseDto;
         }).collect(Collectors.toList());
     }
 
-    
+
     //post 관련 유틸성 함수 모음
     private boolean isSamePostContent(Post previousPost, PostWriteRequestDto requestDto) {
         return previousPost.getType().name().equals(requestDto.getType()) &&
-               previousPost.getTitle().equals(requestDto.getTitle()) &&
-               previousPost.getPrice().equals(requestDto.getPrice()) &&
-               previousPost.getContent().equals(requestDto.getContent()) &&
-               previousPost.getDistance().name().equals(requestDto.getDistance()) &&
-               previousPost.getCategory().name().equals(requestDto.getCategory()) &&
-               previousPost.getLocationName().equals(requestDto.getLocationName()) &&
-               previousPost.getLocationLatitude().equals(requestDto.getLocationLatitude()) &&
-               previousPost.getLocationLongitude().equals(requestDto.getLocationLongitude());
+                previousPost.getTitle().equals(requestDto.getTitle()) &&
+                previousPost.getPrice().equals(requestDto.getPrice()) &&
+                previousPost.getContent().equals(requestDto.getContent()) &&
+                previousPost.getDistance().name().equals(requestDto.getDistance()) &&
+                previousPost.getCategory().name().equals(requestDto.getCategory()) &&
+                previousPost.getLocationName().equals(requestDto.getLocationName()) &&
+                previousPost.getLocationLatitude().equals(requestDto.getLocationLatitude()) &&
+                previousPost.getLocationLongitude().equals(requestDto.getLocationLongitude());
     }
 
     /*
@@ -313,7 +332,6 @@ public class PostService {
     */
 
 
-    
     private boolean isValidCategory(Category postCategory, String requestedCategory) {
         return requestedCategory == null || requestedCategory.equalsIgnoreCase("전체") || postCategory.name().equalsIgnoreCase(requestedCategory);
     }
@@ -337,8 +355,8 @@ public class PostService {
         double dLon = Math.toRadians(lon2 - lon1);
 
         double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                   Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
-                   Math.sin(dLon / 2) * Math.sin(dLon / 2);
+                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
 
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return EARTH_RADIUS * c;
