@@ -1,5 +1,10 @@
 package com.happy.biling.dto.chat;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Setter
+@Getter
 public class SendMessageResponse {
     private Long chatRoomId;
     private String message;
@@ -9,19 +14,4 @@ public class SendMessageResponse {
         this.message = message;
     }
 
-    public Long getChatRoomId() {
-        return chatRoomId;
-    }
-
-    public void setChatRoomId(Long chatRoomId) {
-        this.chatRoomId = chatRoomId;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
 }
