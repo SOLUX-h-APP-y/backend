@@ -1,7 +1,12 @@
 package com.happy.biling.dto.chat;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
+@Setter
+@Getter
 public class MessageResponse {
     private String sender;
     private Long senderUserId;
@@ -15,35 +20,4 @@ public class MessageResponse {
         this.createAt = createAt;
     }
 
-    public String getSender() {
-        return sender;
-    }
-
-    public void setSender(String sender) {
-        this.sender = sender;
-    }
-
-    public Long getSenderUserId() {
-        return senderUserId;
-    }
-
-    public void setSenderUserId(Long senderUserId) {
-        this.senderUserId = senderUserId;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    public LocalDateTime getCreateAt() {
-        return createAt;
-    }
-
-    public void setCreateAt(LocalDateTime createAt) {
-        this.createAt = createAt;
-    }
 }

@@ -1,8 +1,13 @@
 package com.happy.biling.dto.chat;
 
 import com.happy.biling.domain.entity.enums.PostStatus;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.List;
 
+@Setter
+@Getter
 public class ChatRoomDetailResponse {
     private Long chatRoomId;
     private Long writerId;
@@ -24,67 +29,4 @@ public class ChatRoomDetailResponse {
         this.messages = messages;
     }
 
-    public Long getChatRoomId() {
-        return chatRoomId;
-    }
-
-    public void setChatRoomId(Long chatRoomId) {
-        this.chatRoomId = chatRoomId;
-    }
-
-    public Long getWriterId() {
-        return writerId;
-    }
-
-    public void setWriterId(Long writerId) {
-        this.writerId = writerId;
-    }
-
-    public String getPostTitle() {
-        return postTitle;
-    }
-
-    public void setPostTitle(String postTitle) {
-        this.postTitle = postTitle;
-    }
-
-    public String getPostLocation() {
-        return postLocation;
-    }
-
-    public void setPostLocation(String postLocation) {
-        this.postLocation = postLocation;
-    }
-
-    public String getPostImage() {
-        return postImage;
-    }
-
-    public void setPostImage(String postImage) {
-        this.postImage = postImage;
-    }
-
-    public PostStatus getPostStatus() {
-        return postStatus;
-    }
-
-    public void setPostStatus(PostStatus postStatus) {
-        this.postStatus = postStatus;
-    }
-
-    public String getOtherUserProfileImage() {
-        return otherUserProfileImage;
-    }
-
-    public void setOtherUserProfileImage(String otherUserProfileImage) {
-        this.otherUserProfileImage = otherUserProfileImage;
-    }
-
-    public List<MessageResponse> getMessages() {
-        return messages;
-    }
-
-    public void setMessages(List<MessageResponse> messages) {
-        this.messages = messages;
-    }
 }
